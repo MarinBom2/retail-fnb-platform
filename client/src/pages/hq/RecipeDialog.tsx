@@ -99,7 +99,7 @@ function RecipeForm({
   }
 
   return (
-    <form className="form" onSubmit={submit}>
+    <form className="form sticky-actions" onSubmit={submit}>
       <ul className="recipe-rows">
         {rows.map((row, index) => {
           const unit = ingredients.find((sku) => sku.skuId === row.ingredientSkuId)?.unit.description ?? ''

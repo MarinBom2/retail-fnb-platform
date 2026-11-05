@@ -112,7 +112,7 @@ export function ProductCreateDialog({
 
   return (
     <Dialog open title={title} description={brand.businessType.description} size={apparel ? 'lg' : 'md'} onClose={onClose}>
-      <form className="form" onSubmit={submit}>
+      <form className="form sticky-actions" onSubmit={submit}>
         {food && (
           <Segmented<FoodKind>
             label="종류"

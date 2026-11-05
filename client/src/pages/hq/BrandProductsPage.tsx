@@ -30,6 +30,12 @@ function statusTone(code: string): BadgeTone {
   return code === 'ON_SALE' ? 'success' : code === 'SUSPENDED' ? 'warning' : 'neutral'
 }
 
+/** 식자재는 팔지 않으므로 "판매 중" 대신 "사용 중" */
+function statusLabel(product: HqProduct): string {
+  if (product.kind.code === 'INGREDIENT' && product.status.code === 'ON_SALE') return '사용 중'
+  return product.status.description
+}
+
 /** SCR-12 본사 상품 관리: 등록·판매 상태·가격·색상/사이즈 추가·레시피 (FR-CA-001~004) */
 export default function BrandProductsPage() {
   const { brand, reloadBrands } = useCurrentBrand()
@@ -113,7 +119,8 @@ export default function BrandProductsPage() {
     if (apparel && !discontinued) {
       items.push({ label: '색상·사이즈 추가', onSelect: () => setAddingSku(product) })
     }
-    if (product.status.code === 'ON_SALE') {
+    // 식자재는 팔지 않으므로 판매 중지·재개가 뜻이 없다. 단종만 둔다 (레시피 재료 목록에서 빠진다)
+    if (product.status.code === 'ON_SALE' && product.kind.code !== 'INGREDIENT') {
       items.push({ label: '판매 중지', onSelect: () => void changeStatus(product, 'suspend') })
     }
     if (product.status.code === 'SUSPENDED') {
@@ -223,7 +230,7 @@ export default function BrandProductsPage() {
                     <span className="product-badges">
                       {food && <Badge tone={product.kind.code === 'MENU' ? 'food' : 'neutral'}>{product.kind.description}</Badge>}
                       {product.kind.code === 'MENU' && !product.skus[0]?.hasRecipe && <Badge tone="warning">레시피 없음</Badge>}
-                      <Badge tone={statusTone(product.status.code)}>{product.status.description}</Badge>
+                      <Badge tone={statusTone(product.status.code)}>{statusLabel(product)}</Badge>
                     </span>
                     {product.kind.code !== 'INGREDIENT' && <span className="product-price">{priceRange(product)}</span>}
                     {items.length > 0 && <Menu label={`${product.name} 더 보기`} items={items} />}
