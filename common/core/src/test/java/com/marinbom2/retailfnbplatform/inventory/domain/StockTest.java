@@ -88,4 +88,21 @@ class StockTest {
 
         assertThatThrownBy(() -> unsaved.receive(1, StockReference.manual())).isInstanceOf(NullPointerException.class);
     }
+
+    @Test
+    @DisplayName("안전재고 경계값: 수량 == 안전재고면 보충 대상, +1 이면 아니다. 0 은 미설정")
+    void reorderPoint() {
+        stock.receive(10, StockReference.manual());
+        assertThat(stock.needsReorder()).isFalse();
+
+        stock.changeReorderPoint(10);
+        assertThat(stock.needsReorder()).isTrue();
+        stock.changeReorderPoint(9);
+        assertThat(stock.needsReorder()).isFalse();
+        assertThatThrownBy(() -> stock.changeReorderPoint(-1)).isInstanceOf(IllegalArgumentException.class);
+
+        stock.deductForSale(10, StockReference.order(1L));
+        stock.changeReorderPoint(0);
+        assertThat(stock.needsReorder()).isFalse();
+    }
 }

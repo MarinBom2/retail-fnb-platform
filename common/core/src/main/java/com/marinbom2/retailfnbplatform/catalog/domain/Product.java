@@ -104,7 +104,7 @@ public class Product extends BaseEntity {
         if (skus.stream().anyMatch(sku -> sku.getSkuCode().equals(skuCode))) {
             throw new InvalidCatalogException("같은 SKU 코드가 이미 있습니다: " + skuCode);
         }
-        Money effectivePrice = kind.isSellable() ? Objects.requireNonNull(price, "가격이 필요합니다") : Money.ZERO;
+        Money effectivePrice = kind.canBeSold() ? Objects.requireNonNull(price, "가격이 필요합니다") : Money.ZERO;
 
         Sku sku = new Sku(this, skuCode, barcode, effectivePrice, option, unit);
         skus.add(sku);

@@ -40,6 +40,10 @@ public class Stock extends BaseEntity {
     @Column(nullable = false)
     private long quantity;
 
+    /** 안전재고. 수량이 이 값 이하로 내려가면 다시 채울 대상이다. 0 이면 설정하지 않은 것 */
+    @Column(name = "reorder_point", nullable = false)
+    private long reorderPoint;
+
     @Version
     private long version;
 
@@ -50,6 +54,18 @@ public class Stock extends BaseEntity {
         stock.skuId = Objects.requireNonNull(skuId);
         stock.quantity = 0;
         return stock;
+    }
+
+    public void changeReorderPoint(long reorderPoint) {
+        if (reorderPoint < 0) {
+            throw new IllegalArgumentException("안전재고는 0 이상이어야 합니다");
+        }
+        this.reorderPoint = reorderPoint;
+    }
+
+    /** 안전재고를 정했고 수량이 그 이하인지 (경계: 수량 == 안전재고면 true) */
+    public boolean needsReorder() {
+        return reorderPoint > 0 && quantity <= reorderPoint;
     }
 
     public StockMovement receive(long amount, StockReference reference) {

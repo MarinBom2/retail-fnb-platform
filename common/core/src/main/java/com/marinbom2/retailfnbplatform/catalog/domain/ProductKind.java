@@ -29,9 +29,14 @@ public enum ProductKind implements DescriptionCode {
         };
     }
 
-    /** 주문에 담을 수 있는 종류인지. 식자재는 팔지 않는다 */
-    public boolean isSellable() {
+    /** 주문에 담을 수 있는 종류인지. 식자재는 팔지 않는다 (is 접두사를 쓰지 않는다: enum JSON 에 필드로 섞인다) */
+    public boolean canBeSold() {
         return this != INGREDIENT;
+    }
+
+    /** 매장 재고를 세는 종류인지. 메뉴는 재고가 없고 팔리면 레시피의 식자재가 빠진다 */
+    public boolean tracksStock() {
+        return this != MENU;
     }
 
     @Override

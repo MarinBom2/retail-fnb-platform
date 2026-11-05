@@ -1,6 +1,7 @@
 package com.marinbom2.retailfnbplatform.exception;
 
 import com.marinbom2.retailfnbplatform.domain.base.DomainException;
+import com.marinbom2.retailfnbplatform.inventory.domain.exception.IllegalTransferStateException;
 import com.marinbom2.retailfnbplatform.inventory.domain.exception.InsufficientStockException;
 import com.marinbom2.retailfnbplatform.order.domain.exception.IllegalOrderStateException;
 import com.marinbom2.retailfnbplatform.store.domain.exception.IllegalStoreStateException;
@@ -48,6 +49,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     public ProblemDetail handleIllegalOrderState(IllegalOrderStateException e) {
         log.info("order state conflict: {}", e.getMessage());
         return ProblemDetails.of(ErrorCode.ORDER_STATE_CONFLICT);
+    }
+
+    @ExceptionHandler(IllegalTransferStateException.class)
+    public ProblemDetail handleIllegalTransferState(IllegalTransferStateException e) {
+        log.info("transfer state conflict: {}", e.getMessage());
+        return ProblemDetails.of(ErrorCode.TRANSFER_STATE_CONFLICT);
     }
 
     @ExceptionHandler(IllegalStoreStateException.class)

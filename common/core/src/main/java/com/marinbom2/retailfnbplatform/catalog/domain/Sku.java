@@ -77,7 +77,11 @@ public class Sku {
 
     /** 주문에 담을 수 있는지: 판매 중인 상품이고 식자재가 아님 */
     public boolean isSellable() {
-        return product.isOnSale() && product.getKind().isSellable();
+        return product.isOnSale() && product.getKind().canBeSold();
+    }
+
+    public boolean tracksStock() {
+        return product.getKind().tracksStock();
     }
 
     public ProductKind getKind() {
@@ -91,7 +95,7 @@ public class Sku {
 
     /** 식자재는 팔지 않아 가격이 없다 */
     public void changePrice(Money price) {
-        if (!product.getKind().isSellable()) {
+        if (!product.getKind().canBeSold()) {
             throw new InvalidCatalogException("식자재에는 판매 가격을 두지 않습니다: " + skuCode);
         }
         this.price = Objects.requireNonNull(price);

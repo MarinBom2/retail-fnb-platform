@@ -41,6 +41,7 @@ public enum ErrorCode implements DescriptionCode {
     ALREADY_EXIST(409, "이미 존재합니다."),
     STORE_STATE_CONFLICT(409, "지금 매장 상태에서는 할 수 없는 요청입니다."),
     ORDER_STATE_CONFLICT(409, "지금 주문 상태에서는 할 수 없는 요청입니다."),
+    TRANSFER_STATE_CONFLICT(409, "지금 이동 상태에서는 할 수 없는 요청입니다."),
     OUT_OF_STOCK(409, "재고가 부족합니다."),
     /** 같은 재고·주문을 동시에 바꿨을 때 (낙관적 락). 다시 시도하면 된다 */
     CONCURRENT_UPDATE(409, "다른 요청과 겹쳤습니다. 다시 시도해 주세요."),
