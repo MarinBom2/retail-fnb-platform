@@ -2,7 +2,7 @@ import { useCallback, useEffect } from 'react'
 import type { ReactNode } from 'react'
 import { Link, Navigate, NavLink, Outlet, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { StockActionsProvider } from '../../../features/stock/StockActionsProvider'
-import { ROUTES, loginPath, storePath } from '../../../routes'
+import { ROUTES, brandsPath, loginPath, storePath } from '../../../routes'
 import type { StoreSection } from '../../../routes'
 import { storeApi } from '../../api/store/storeService'
 import { useAuth } from '../../auth/useAuth'
@@ -107,6 +107,9 @@ function AuthenticatedShell() {
               <span className="muted small user-email">
                 {member?.email} · {store.role.description}
               </span>
+              <Link className="button secondary small" to={brandsPath()} aria-label="본사 관리">
+                본사
+              </Link>
               <button type="button" className="button secondary small" onClick={() => void logout()}>
                 로그아웃
               </button>

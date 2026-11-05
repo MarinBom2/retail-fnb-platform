@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
-import { loginPath, storePath } from '../../routes'
+import { brandsPath, loginPath, storePath } from '../../routes'
 import { storeApi } from '../../shared/api/store/storeService'
 import type { MyStore } from '../../shared/api/store/storeService'
 import { useAuth } from '../../shared/auth/useAuth'
@@ -8,7 +8,7 @@ import { useResource } from '../../shared/hooks/useResource'
 import { Badge } from '../../shared/ui/Badge'
 import { businessTypeTone } from '../../shared/ui/badgeTone'
 import { EmptyState, LoadState } from '../../shared/ui/EmptyState'
-import { IconChevronRight } from '../../shared/ui/icons'
+import { IconBuilding, IconChevronRight } from '../../shared/ui/icons'
 import { readLastStoreId, writeLastStoreId } from '../../shared/utils/storage'
 import './stores.css'
 
@@ -36,6 +36,7 @@ function StoreList() {
     )
   }
 
+  // 매장이 하나뿐이면 바로 들어간다. 본사 화면은 매장 화면 머리글에서 들어갈 수 있다
   if (data.length === 1) {
     return <Navigate to={storePath(data[0].storeId)} replace />
   }
@@ -50,13 +51,35 @@ function StoreList() {
           <h1>매장 선택</h1>
           <p className="muted">{member?.email} 계정으로 일하는 매장입니다.</p>
         </div>
-        <button type="button" className="button secondary small" onClick={() => void logout()}>
-          로그아웃
-        </button>
+        <div className="header-actions">
+          {data.length > 0 && (
+            <Link className="button secondary small" to={brandsPath()}>
+              <IconBuilding className="button-icon" />
+              본사 관리
+            </Link>
+          )}
+          <button type="button" className="button secondary small" onClick={() => void logout()}>
+            로그아웃
+          </button>
+        </div>
       </header>
 
       {data.length === 0 && (
-        <EmptyState title="아직 배정된 매장이 없습니다.">본사 관리자에게 매장 배정을 요청해 주세요.</EmptyState>
+        <EmptyState
+          title="아직 일하는 매장이 없습니다."
+          action={
+            <div className="header-actions">
+              <Link className="button" to={brandsPath(true)}>
+                브랜드 만들기
+              </Link>
+              <Link className="button secondary" to={brandsPath()}>
+                내 브랜드 보기
+              </Link>
+            </div>
+          }
+        >
+          본사라면 브랜드를 만들고 매장과 상품을 등록하세요. 매장 직원이라면 본사 관리자에게 배정을 요청해 주세요.
+        </EmptyState>
       )}
 
       {brands.map(([brandName, stores]) => (

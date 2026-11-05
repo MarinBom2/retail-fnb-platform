@@ -112,3 +112,17 @@ export const IconStore = (p: IconProps) => (
     <path d="M5 12.5V20h14v-7.5M10 20v-5h4v5" />
   </svg>
 )
+
+export const IconBuilding = (p: IconProps) => (
+  <svg {...base(p)}>
+    <rect x="5" y="3.5" width="14" height="17" rx="2" />
+    <path d="M9 7.5h2M13 7.5h2M9 11h2M13 11h2M9 14.5h2M13 14.5h2M10.5 20.5v-3h3v3" />
+  </svg>
+)
+
+export const IconTrash = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="M4.5 7h15M10 11v6M14 11v6M6.5 7l1 12.5h9l1-12.5M9.5 7V4.5h5V7" />
+  </svg>
+)
+

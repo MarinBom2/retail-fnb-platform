@@ -1,5 +1,5 @@
 import { Suspense, lazy } from 'react'
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import LandingPage from './pages/landing/LandingPage'
 import { ROUTES } from './routes'
 import { AuthProvider } from './shared/auth/AuthContext'
@@ -16,6 +16,10 @@ const OrdersPage = lazy(() => import('./pages/orders/OrdersPage'))
 const InventoryPage = lazy(() => import('./pages/inventory/InventoryPage'))
 const TransfersPage = lazy(() => import('./pages/transfers/TransfersPage'))
 const CatalogPage = lazy(() => import('./pages/catalog/CatalogPage'))
+const BrandListPage = lazy(() => import('./pages/hq/BrandListPage'))
+const HqShell = lazy(() => import('./shared/ui/layout/HqShell'))
+const BrandStoresPage = lazy(() => import('./pages/hq/BrandStoresPage'))
+const BrandProductsPage = lazy(() => import('./pages/hq/BrandProductsPage'))
 
 export default function App() {
   return (
@@ -35,6 +39,12 @@ export default function App() {
                   <Route path="inventory" element={<InventoryPage />} />
                   <Route path="transfers" element={<TransfersPage />} />
                   <Route path="catalog" element={<CatalogPage />} />
+                </Route>
+                <Route path={ROUTES.SCR10_BRANDS} element={<BrandListPage />} />
+                <Route path="/brands/:brandId" element={<HqShell />}>
+                  <Route index element={<Navigate to="stores" replace />} />
+                  <Route path="stores" element={<BrandStoresPage />} />
+                  <Route path="products" element={<BrandProductsPage />} />
                 </Route>
                 <Route path="*" element={<LandingPage />} />
               </Routes>
