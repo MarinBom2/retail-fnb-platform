@@ -36,10 +36,11 @@ interface MyStore {
   brandId: number
   brandName: string
   businessType: CodeLabel      // GENERAL_MERCHANDISE | APPAREL | FOOD_SERVICE
-  role: CodeLabel              // OWNER | MANAGER | STAFF
+  role: CodeLabel              // OWNER | MANAGER | STAFF, 브랜드 관리자면 { code: 'HQ_ADMIN', description: '본사 관리자' }
   canManageInventory: boolean
 }
 // 응답: MyStore[]  (브랜드 이름, 매장 이름 순)
+// 브랜드 관리자(§8)는 그 브랜드의 모든 매장이 나온다 (직원으로도 배정돼 있으면 본사 관리자가 우선)
 ```
 
 ---
@@ -253,4 +254,127 @@ interface Order {
 | `demo@retailfnb.dev` | `Demo1234!` | 데모 브랜드 3개의 모든 매장 점주 |
 | `staff@retailfnb.dev` | `Demo1234!` | 생활용품 브랜드 1호점 직원 (재고 권한 없음) |
 
+`demo@retailfnb.dev` 는 세 브랜드의 브랜드 관리자(§8)이기도 하다.
+
 데모 브랜드는 실제 상호가 아닌 가상 이름이다: 생활용품 `데일리마트`, 의류 `핏앤코`, 외식 `온기식당`.
+
+---
+
+## 8. 본사 (브랜드 관리)
+
+브랜드 관리자(`BrandAdmin`)가 브랜드의 매장·직원·상품을 등록하고 관리한다.
+
+| 항목 | 규칙 |
+|---|---|
+| 브랜드 만들기 | 로그인한 누구나. 만든 사람이 그 브랜드의 관리자가 된다 (셀프 온보딩) |
+| 경로 | `/api/v1/brands/{brandId}/...`. 서버가 **이 브랜드의 관리자인지** 확인한다 (아니면 403 `FORBIDDEN`). 플랫폼 관리자(`ADMIN`, `SYSTEM`)는 모든 브랜드 통과 |
+| 매장 권한 | 브랜드 관리자는 그 브랜드의 모든 매장 API(§1~6)에 재고 권한까지 가진 채로 들어간다 |
+| 업종 | 브랜드를 만들 때 정하고 바꿀 수 없다 |
+
+### 8.1 브랜드
+
+```ts
+interface BrandSummary {
+  brandId: number
+  name: string
+  businessType: CodeLabel
+  storeCount: number
+  openStoreCount: number
+  productCount: number
+}
+```
+
+| 메서드 | 경로 | 요청 | 응답 | FR |
+|---|---|---|---|---|
+| GET | `/api/v1/brands` | | `BrandSummary[]` 내가 관리하는 브랜드 (플랫폼 관리자는 전체), 이름 순 | FR-ST-001 |
+| POST | `/api/v1/brands` | `{ name: string, businessType: string }` (businessType 은 code) | `BrandSummary` (201). 같은 이름 409 `ALREADY_EXIST` | FR-ST-001 |
+| GET | `/api/v1/brands/{brandId}` | | `BrandSummary` | FR-ST-001 |
+| PATCH | `/api/v1/brands/{brandId}` | `{ name: string }` | `BrandSummary` | FR-ST-001 |
+
+### 8.2 매장
+
+```ts
+interface HqStore {
+  storeId: number
+  code: string
+  name: string
+  status: CodeLabel          // PREPARING | OPEN | CLOSED
+  staffCount: number
+}
+
+interface StoreStaffItem {
+  staffId: number
+  memberId: number
+  email: string
+  role: CodeLabel            // OWNER | MANAGER | STAFF
+}
+```
+
+| 메서드 | 경로 | 요청 | 응답 | FR |
+|---|---|---|---|---|
+| GET | `/api/v1/brands/{brandId}/stores` | | `HqStore[]` 코드 순 | FR-ST-002 |
+| POST | `/api/v1/brands/{brandId}/stores` | `{ code: string, name: string }` 코드는 브랜드 안에서 하나 | `HqStore` (201, 오픈 준비 상태). 같은 코드 409 `ALREADY_EXIST` | FR-ST-002 |
+| PATCH | `/api/v1/brands/{brandId}/stores/{storeId}` | `{ name: string }` | `HqStore` | FR-ST-002 |
+| POST | `/api/v1/brands/{brandId}/stores/{storeId}/open` | | `HqStore`. 이미 영업 중 409 `STORE_STATE_CONFLICT` | FR-ST-002 |
+| POST | `/api/v1/brands/{brandId}/stores/{storeId}/close` | | `HqStore`. 영업 중이 아니면 409 `STORE_STATE_CONFLICT` | FR-ST-002 |
+| GET | `/api/v1/brands/{brandId}/stores/{storeId}/staff` | | `StoreStaffItem[]` | FR-ST-003 |
+| POST | `/api/v1/brands/{brandId}/stores/{storeId}/staff` | `{ email: string, role: string }` 가입한 회원만. 없으면 404 `NOT_FOUND_MEMBER`, 이미 배정 409 `ALREADY_EXIST` | `StoreStaffItem` (201) | FR-ST-003 |
+| PATCH | `/api/v1/brands/{brandId}/stores/{storeId}/staff/{staffId}` | `{ role: string }` | `StoreStaffItem` | FR-ST-003 |
+| DELETE | `/api/v1/brands/{brandId}/stores/{storeId}/staff/{staffId}` | | 204 | FR-ST-003 |
+
+### 8.3 상품
+
+```ts
+interface HqProduct {
+  productId: number
+  name: string
+  category: string | null
+  kind: CodeLabel            // MERCHANDISE | MENU | INGREDIENT
+  status: CodeLabel          // ON_SALE | SUSPENDED | DISCONTINUED
+  skus: HqSku[]
+}
+
+interface HqSku {
+  skuId: number
+  skuCode: string
+  barcode: string | null
+  displayName: string
+  color: string | null
+  size: string | null
+  price: number              // 식자재는 0
+  unit: CodeLabel
+  hasRecipe: boolean         // 메뉴만 의미 있음
+}
+
+interface NewSku {
+  skuCode: string
+  barcode?: string | null
+  price?: number | null      // 식자재는 보내지 않는다 (보내도 0 으로 저장)
+  color?: string | null      // 의류만, 필수
+  size?: string | null       // 의류만, 필수
+  unit: string               // EA | GRAM | MILLILITER
+}
+
+interface RecipeResponse {
+  menuSkuId: number
+  lines: { ingredientSkuId: number; ingredientName: string; unit: CodeLabel; quantity: number }[]
+}
+```
+
+| 메서드 | 경로 | 요청 | 응답 | FR |
+|---|---|---|---|---|
+| GET | `/api/v1/brands/{brandId}/products` | | `HqProduct[]` 분류·이름 순 | FR-CA-001 |
+| POST | `/api/v1/brands/{brandId}/products` | `{ kind, name, category?, skus: NewSku[] }` skus 1개 이상 | `HqProduct` (201) | FR-CA-001 |
+| POST | `/api/v1/brands/{brandId}/products/{productId}/skus` | `NewSku` (의류에서 색상·사이즈 추가) | `HqProduct` (201) | FR-CA-001 |
+| POST | `/api/v1/brands/{brandId}/products/{productId}/suspend` · `/resume` · `/discontinue` | | `HqProduct` | FR-CA-002 |
+| PATCH | `/api/v1/brands/{brandId}/skus/{skuId}/price` | `{ price: number }` (0 이상) | `HqSku` | FR-CA-004 |
+| GET | `/api/v1/brands/{brandId}/skus/{skuId}/recipe` | | `RecipeResponse` (없으면 lines 빈 배열) | FR-CA-003 |
+| PUT | `/api/v1/brands/{brandId}/skus/{skuId}/recipe` | `{ lines: { ingredientSkuId, quantity }[] }` 1줄 이상 | `RecipeResponse` | FR-CA-003 |
+
+규칙 (서버가 400 `DOMAIN_RULE_VIOLATION` 또는 409 로 거절):
+- 업종이 허용하는 종류만 (리테일: `MERCHANDISE`, 외식: `MENU`·`INGREDIENT`)
+- 의류는 SKU 마다 색상·사이즈 필수, 같은 조합 금지. 생활용품·외식은 상품당 SKU 1개, 색상·사이즈 없음
+- SKU 코드·바코드는 브랜드 안에서 하나 (409 `ALREADY_EXIST`)
+- 단종 상품은 SKU 추가·판매 재개 불가, 식자재는 가격 변경 불가
+- 레시피: 메뉴 SKU 에만, 재료는 같은 브랜드 식자재 SKU, 양 1 이상, 같은 식자재 두 번 금지
+

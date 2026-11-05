@@ -15,8 +15,8 @@ import com.marinbom2.retailfnbplatform.order.domain.OrderType;
 import com.marinbom2.retailfnbplatform.order.domain.PaymentMethod;
 import com.marinbom2.retailfnbplatform.store.application.StoreAccess;
 import com.marinbom2.retailfnbplatform.store.application.StoreAccessGuard;
+import com.marinbom2.retailfnbplatform.type.common.EnumCodes;
 import com.marinbom2.retailfnbplatform.type.common.ErrorCode;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -38,7 +38,7 @@ public class OrderService {
     @Transactional
     public OrderResponse open(Long storeId, OpenOrderRequest request, Member member) {
         StoreAccess access = storeAccessGuard.require(storeId, member);
-        Order order = Order.open(access.store(), parse(OrderType.class, request.orderType()), request.tableLabel());
+        Order order = Order.open(access.store(), EnumCodes.parse(OrderType.class, request.orderType()), request.tableLabel());
         Map<Long, Sku> skus = catalogLookup.skusOf(access.store(), request.items().stream().map(OrderItemRequest::skuId).toList())
                 .stream().collect(Collectors.toMap(Sku::getId, Function.identity()));
         request.items().forEach(item -> order.addItem(skus.get(item.skuId()), item.quantity()));
@@ -50,7 +50,7 @@ public class OrderService {
         storeAccessGuard.require(storeId, member);
         List<Order> orders = status == null || status.isBlank()
                 ? orderRepository.findTop50ByStoreIdOrderByIdDesc(storeId)
-                : orderRepository.findTop50ByStoreIdAndStatusOrderByIdDesc(storeId, parse(OrderStatus.class, status));
+                : orderRepository.findTop50ByStoreIdAndStatusOrderByIdDesc(storeId, EnumCodes.parse(OrderStatus.class, status));
         return orders.stream().map(OrderResponse::from).toList();
     }
 
@@ -88,7 +88,7 @@ public class OrderService {
     public OrderResponse pay(Long storeId, Long orderId, String method, long amount, Member member) {
         storeAccessGuard.require(storeId, member);
         orderOf(storeId, orderId);
-        return OrderResponse.from(orderPaymentService.pay(orderId, parse(PaymentMethod.class, method), Money.won(amount)));
+        return OrderResponse.from(orderPaymentService.pay(orderId, EnumCodes.parse(PaymentMethod.class, method), Money.won(amount)));
     }
 
     @Transactional
@@ -111,12 +111,5 @@ public class OrderService {
         return orderRepository.findById(orderId)
                 .filter(order -> order.getStoreId().equals(storeId))
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_DATA, "주문을 찾을 수 없습니다."));
-    }
-
-    private static <E extends Enum<E>> E parse(Class<E> type, String code) {
-        return Arrays.stream(type.getEnumConstants())
-                .filter(value -> value.name().equals(code))
-                .findFirst()
-                .orElseThrow(() -> new BusinessException(ErrorCode.INVALID_REQUEST_DATA, "지원하지 않는 값입니다: " + code));
     }
 }

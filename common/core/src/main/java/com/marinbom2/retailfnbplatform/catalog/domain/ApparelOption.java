@@ -1,5 +1,6 @@
 package com.marinbom2.retailfnbplatform.catalog.domain;
 
+import com.marinbom2.retailfnbplatform.catalog.domain.exception.InvalidCatalogException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 
@@ -12,7 +13,7 @@ public record ApparelOption(
 
     public ApparelOption {
         if (color == null || color.isBlank() || size == null || size.isBlank()) {
-            throw new IllegalArgumentException("색상과 사이즈가 모두 필요합니다");
+            throw new InvalidCatalogException("색상과 사이즈가 모두 필요합니다");
         }
         color = color.trim().toUpperCase();
         size = size.trim().toUpperCase();

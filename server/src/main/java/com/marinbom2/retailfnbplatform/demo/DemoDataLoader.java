@@ -27,6 +27,8 @@ import com.marinbom2.retailfnbplatform.order.domain.OrderRepository;
 import com.marinbom2.retailfnbplatform.order.domain.OrderType;
 import com.marinbom2.retailfnbplatform.order.domain.PaymentMethod;
 import com.marinbom2.retailfnbplatform.store.domain.Brand;
+import com.marinbom2.retailfnbplatform.store.domain.BrandAdmin;
+import com.marinbom2.retailfnbplatform.store.domain.BrandAdminRepository;
 import com.marinbom2.retailfnbplatform.store.domain.BrandRepository;
 import com.marinbom2.retailfnbplatform.store.domain.BusinessType;
 import com.marinbom2.retailfnbplatform.store.domain.StaffRole;
@@ -56,6 +58,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * demo 프로필 데이터 (md/api.md §7). 가상의 세 브랜드(생활용품·의류·외식)와 매장 8곳, 오늘 매출, 안전재고 부족, 단계별 매장 간 이동.
+ * 데모 계정은 세 브랜드의 관리자(본사)이자 모든 매장의 점주다.
  * 실제 상호를 쓰지 않는다. 모든 값은 도메인 메서드를 거쳐 만든다 (재고 원장과 매출이 서로 맞게).
  */
 @Slf4j
@@ -70,6 +73,7 @@ public class DemoDataLoader implements ApplicationRunner {
 
     private final MemberRepository memberRepository;
     private final BrandRepository brandRepository;
+    private final BrandAdminRepository brandAdminRepository;
     private final StoreRepository storeRepository;
     private final StoreStaffRepository storeStaffRepository;
     private final ProductRepository productRepository;
@@ -108,7 +112,7 @@ public class DemoDataLoader implements ApplicationRunner {
     // ---- 생활용품: 데일리마트 ----
 
     private void generalMerchandise(Member owner, Member staff) {
-        Brand brand = brandRepository.save(Brand.register("데일리마트", BusinessType.GENERAL_MERCHANDISE));
+        Brand brand = brand("데일리마트", BusinessType.GENERAL_MERCHANDISE, owner);
         Store gangnam = store(brand, "DM-001", "강남점", owner);
         Store hongdae = store(brand, "DM-002", "홍대점", owner);
         Store pangyo = store(brand, "DM-003", "판교점", owner);
@@ -157,7 +161,7 @@ public class DemoDataLoader implements ApplicationRunner {
     // ---- 의류: 핏앤코 ----
 
     private void apparel(Member owner) {
-        Brand brand = brandRepository.save(Brand.register("핏앤코", BusinessType.APPAREL));
+        Brand brand = brand("핏앤코", BusinessType.APPAREL, owner);
         Store myeongdong = store(brand, "FC-001", "명동점", owner);
         Store seongsu = store(brand, "FC-002", "성수점", owner);
         Store jamsil = store(brand, "FC-003", "잠실점", owner);
@@ -194,7 +198,7 @@ public class DemoDataLoader implements ApplicationRunner {
     // ---- 외식: 온기식당 ----
 
     private void foodService(Member owner) {
-        Brand brand = brandRepository.save(Brand.register("온기식당", BusinessType.FOOD_SERVICE));
+        Brand brand = brand("온기식당", BusinessType.FOOD_SERVICE, owner);
         Store gwanghwamun = store(brand, "OG-001", "광화문점", owner);
         Store yeouido = store(brand, "OG-002", "여의도점", owner);
 
@@ -240,6 +244,13 @@ public class DemoDataLoader implements ApplicationRunner {
     }
 
     // ---- 도우미 ----
+
+    /** 데모 계정은 세 브랜드의 관리자(본사)이기도 하다 */
+    private Brand brand(String name, BusinessType type, Member owner) {
+        Brand brand = brandRepository.save(Brand.register(name, type));
+        brandAdminRepository.save(BrandAdmin.of(brand, owner.getId()));
+        return brand;
+    }
 
     private Store store(Brand brand, String code, String name, Member owner) {
         Store store = storeRepository.save(Store.create(brand, code, name));

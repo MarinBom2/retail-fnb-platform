@@ -11,7 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /**
- * 경로의 SKU 가 이 매장 브랜드의 것인지 확인하고 읽는다. 다른 브랜드 SKU 는 없는 것처럼 404 (존재를 알리지 않는다).
+ * 경로의 SKU 가 이 브랜드(또는 매장의 브랜드) 것인지 확인하고 읽는다. 다른 브랜드 SKU 는 없는 것처럼 404 (존재를 알리지 않는다).
  */
 @Component
 @RequiredArgsConstructor
@@ -20,8 +20,12 @@ public class CatalogLookup {
     private final SkuRepository skuRepository;
 
     public Sku skuOf(Store store, Long skuId) {
+        return skuOfBrand(store.getBrandId(), skuId);
+    }
+
+    public Sku skuOfBrand(Long brandId, Long skuId) {
         return skuRepository.findById(skuId)
-                .filter(sku -> sku.getBrandId().equals(store.getBrandId()))
+                .filter(sku -> sku.getBrandId().equals(brandId))
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_DATA, "상품을 찾을 수 없습니다."));
     }
 
@@ -35,8 +39,12 @@ public class CatalogLookup {
     }
 
     public List<Sku> skusOf(Store store, Collection<Long> skuIds) {
+        return skusOfBrand(store.getBrandId(), skuIds);
+    }
+
+    public List<Sku> skusOfBrand(Long brandId, Collection<Long> skuIds) {
         List<Sku> skus = skuRepository.findAllById(skuIds).stream()
-                .filter(sku -> sku.getBrandId().equals(store.getBrandId()))
+                .filter(sku -> sku.getBrandId().equals(brandId))
                 .toList();
         if (skus.size() != skuIds.stream().distinct().count()) {
             throw new BusinessException(ErrorCode.NOT_FOUND_DATA, "상품을 찾을 수 없습니다.");

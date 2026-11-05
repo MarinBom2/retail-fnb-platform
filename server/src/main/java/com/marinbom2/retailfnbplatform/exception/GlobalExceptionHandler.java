@@ -9,6 +9,7 @@ import com.marinbom2.retailfnbplatform.type.common.ErrorCode;
 import java.util.List;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -67,6 +68,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     public ProblemDetail handleOptimisticLock(OptimisticLockingFailureException e) {
         log.info("concurrent update: {}", e.getMessage());
         return ProblemDetails.of(ErrorCode.CONCURRENT_UPDATE);
+    }
+
+    /** 서비스가 먼저 확인하지 못한 유니크 제약 충돌 (동시에 같은 코드로 등록 등). 제약 이름은 로그로만 */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ProblemDetail handleDataIntegrity(DataIntegrityViolationException e) {
+        log.info("data integrity: {}", e.getMostSpecificCause().getMessage());
+        return ProblemDetails.of(ErrorCode.CONFLICT);
     }
 
     /** 위에서 따로 다루지 않는 도메인 규칙 위반. 메시지(내부 정보)는 로그로만 남긴다 */
