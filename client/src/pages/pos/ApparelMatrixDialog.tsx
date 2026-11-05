@@ -46,7 +46,6 @@ export function ApparelMatrixDialog({ product, cart, onAdd, onSoldOut, onClose }
                     <td key={size}>
                       <button
                         type="button"
-                        data-autofocus={undefined}
                         className={`matrix-cell ${stock === 0 ? 'is-sold-out' : ''} ${inCart > 0 ? 'in-cart' : ''}`}
                         aria-label={`${color} ${size} 재고 ${stock}${inCart ? `, 담은 수량 ${inCart}` : ''}`}
                         onClick={() => (stock === 0 ? onSoldOut(sku) : onAdd(sku))}
@@ -66,7 +65,7 @@ export function ApparelMatrixDialog({ product, cart, onAdd, onSoldOut, onClose }
         {formatWon(skus[0]?.price ?? 0)} · 품절 칸을 누르면 다른 매장 재고를 보고 이동을 요청할 수 있습니다.
       </p>
       <div className="dialog-actions">
-        <button type="button" className="button" onClick={onClose}>
+        <button type="button" className="button" data-autofocus onClick={onClose}>
           완료
         </button>
       </div>

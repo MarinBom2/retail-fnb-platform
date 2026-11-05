@@ -7,6 +7,8 @@ import { Badge } from '../../shared/ui/Badge'
 import { orderStatusTone } from '../../shared/ui/badgeTone'
 import { useConfirm } from '../../shared/ui/confirmContext'
 import { EmptyState, LoadState } from '../../shared/ui/EmptyState'
+import { IconChevronRight, IconRefresh } from '../../shared/ui/icons'
+import { Segmented } from '../../shared/ui/Segmented'
 import { useToast } from '../../shared/ui/toastContext'
 import { formatDateTimeKst, formatNumber, formatWon } from '../../shared/utils/format'
 import './orders.css'
@@ -34,23 +36,18 @@ export default function OrdersPage() {
           <p className="muted">최근 50건</p>
         </div>
         <button type="button" className="button secondary small" onClick={reload} disabled={loading}>
+          <IconRefresh className="button-icon" />
           새로고침
         </button>
       </header>
 
-      <div className="tabs" role="tablist" aria-label="주문 상태">
-        {TABS.map((tab) => (
-          <button
-            key={tab.label}
-            type="button"
-            role="tab"
-            aria-selected={status === tab.code}
-            className={status === tab.code ? 'selected' : ''}
-            onClick={() => setStatus(tab.code)}
-          >
-            {tab.label}
-          </button>
-        ))}
+      <div className="orders-toolbar">
+        <Segmented
+          label="주문 상태"
+          value={status ?? 'ALL'}
+          onChange={(value) => setStatus(value === 'ALL' ? undefined : (value as OrderStatusCode))}
+          options={TABS.map((tab) => ({ value: tab.code ?? 'ALL', label: tab.label }))}
+        />
       </div>
 
       {!data && <LoadState loading={loading} error={error} onRetry={reload} />}
@@ -112,6 +109,7 @@ function OrderRow({ order, onChanged }: { order: Order; onChanged: () => void })
           </span>
           <Badge tone={orderStatusTone(order.status.code)}>{order.status.description}</Badge>
           <strong className="order-amount">{formatWon(order.totalAmount)}</strong>
+          <IconChevronRight className="chevron order-chevron" />
         </summary>
         <div className="order-detail">
           <table className="data-table compact">
@@ -141,7 +139,7 @@ function OrderRow({ order, onChanged }: { order: Order; onChanged: () => void })
               </button>
             )}
             {order.status.code === 'PAID' && (
-              <button type="button" className="button danger small" disabled={busy} onClick={() => void act('refund')}>
+              <button type="button" className="button danger secondary small" disabled={busy} onClick={() => void act('refund')}>
                 환불
               </button>
             )}

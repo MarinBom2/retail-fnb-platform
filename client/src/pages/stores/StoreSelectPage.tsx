@@ -8,6 +8,7 @@ import { useResource } from '../../shared/hooks/useResource'
 import { Badge } from '../../shared/ui/Badge'
 import { businessTypeTone } from '../../shared/ui/badgeTone'
 import { EmptyState, LoadState } from '../../shared/ui/EmptyState'
+import { IconChevronRight } from '../../shared/ui/icons'
 import { readLastStoreId, writeLastStoreId } from '../../shared/utils/storage'
 import './stores.css'
 
@@ -72,8 +73,11 @@ function StoreList() {
                 onClick={() => writeLastStoreId(store.storeId)}
               >
                 <div className="store-card-title">
-                  <strong>{store.storeName}</strong>
-                  {store.storeId === last && <span className="muted small">최근</span>}
+                  <strong>
+                    {store.storeName}
+                    {store.storeId === last && <span className="muted small"> · 최근</span>}
+                  </strong>
+                  <IconChevronRight className="chevron" />
                 </div>
                 <div className="store-card-meta">
                   <Badge tone={store.status.code === 'OPEN' ? 'success' : 'neutral'}>{store.status.description}</Badge>
@@ -86,7 +90,7 @@ function StoreList() {
         </section>
       ))}
       {data.length > 0 && (
-        <p className="muted small">
+        <p className="muted small store-footnote">
           매장을 고르면 대시보드로 이동합니다.{' '}
           <button type="button" className="link" onClick={() => last && navigate(storePath(last))} disabled={!last}>
             최근 매장으로 바로 가기

@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef } from 'react'
 import type { ReactNode } from 'react'
+import { IconClose } from './icons'
 
 type DialogProps = {
   open: boolean
@@ -14,7 +15,7 @@ type DialogProps = {
 
 /**
  * 네이티브 dialog 의 showModal 을 쓴다: 포커스 가두기, Esc 닫기, 바깥 비활성화를 브라우저가 맡는다.
- * 열릴 때 첫 입력칸(없으면 첫 버튼)에 포커스가 간다.
+ * 열릴 때 첫 입력칸(없으면 첫 버튼)에 포커스가 간다. 모바일에서는 아래에서 올라오는 시트로 보인다.
  */
 export function Dialog({ open, title, onClose, children, footer, size = 'md', description }: DialogProps) {
   const ref = useRef<HTMLDialogElement>(null)
@@ -54,7 +55,7 @@ export function Dialog({ open, title, onClose, children, footer, size = 'md', de
               {description && <p className="muted small">{description}</p>}
             </div>
             <button type="button" className="icon-button" aria-label="닫기" onClick={onClose}>
-              ×
+              <IconClose />
             </button>
           </header>
           <div className="dialog-body">{children}</div>

@@ -7,6 +7,7 @@ import type { Dashboard, LowStockItem } from '../../shared/api/dashboard/dashboa
 import { useResource } from '../../shared/hooks/useResource'
 import { isFoodService, useCurrentStore } from '../../shared/store/storeContext'
 import { EmptyState, LoadState } from '../../shared/ui/EmptyState'
+import { IconChevronRight, IconRefresh } from '../../shared/ui/icons'
 import { formatBusinessDate, formatNumber, formatQuantity, formatWon } from '../../shared/utils/format'
 import './dashboard.css'
 
@@ -28,6 +29,7 @@ export default function DashboardPage() {
         </div>
         <div className="header-actions">
           <button type="button" className="button secondary small" onClick={reload} disabled={loading}>
+            <IconRefresh className="button-icon" />
             새로고침
           </button>
           <Link className="button small" to={storePath(store.storeId, 'pos')}>
@@ -93,8 +95,8 @@ function DashboardBody({ data }: { data: Dashboard }) {
                 <li key={item.skuId}>
                   <span className="rank">{index + 1}</span>
                   <span className="grow">{item.itemName}</span>
-                  <span className="muted small">{formatNumber(item.quantity)}개</span>
-                  <strong>{formatWon(item.amount)}</strong>
+                  <span className="muted small rank-qty">{formatNumber(item.quantity)}개</span>
+                  <strong className="rank-amount">{formatWon(item.amount)}</strong>
                 </li>
               ))}
             </ol>
@@ -137,7 +139,10 @@ function TaskRow({ to, label, count }: { to: string; label: string; count: numbe
     <li>
       <Link to={to} className={`task-row ${count > 0 ? 'has-count' : ''}`}>
         <span>{label}</span>
-        <span className="task-count">{formatNumber(count)}</span>
+        <span className="task-row-right">
+          <span className="task-count">{formatNumber(count)}</span>
+          <IconChevronRight className="chevron" />
+        </span>
       </Link>
     </li>
   )
@@ -154,7 +159,7 @@ function LowStockRow({ item }: { item: LowStockItem }) {
     <li className="low-stock-row">
       <div className="grow">
         <strong>{item.itemName}</strong>
-        <div className="meter" aria-hidden="true">
+        <div className={`meter ${item.quantity === 0 ? 'danger' : ''}`} aria-hidden="true">
           <span style={{ width: `${ratio * 100}%` }} />
         </div>
         <span className="muted small">
@@ -217,7 +222,7 @@ function HourlyChart({ data }: { data: { hour: number; amount: number }[] }) {
                 y={height - barHeight}
                 width={barWidth}
                 height={Math.max(barHeight, point.amount > 0 ? 2 : 0)}
-                rx={2}
+                rx={Math.min(4, barWidth / 2)}
                 className={point.hour === busiest.hour ? 'chart-bar is-peak' : 'chart-bar'}
               >
                 <title>{`${point.hour}시 ${formatWon(point.amount)}`}</title>

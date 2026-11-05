@@ -151,11 +151,12 @@ export function FoodServicePos({ catalog, onCatalogChanged }: Props) {
             id="table-label"
             value={tableLabel}
             maxLength={20}
-            placeholder="번호 (예: 5)"
+            inputMode="numeric"
+            placeholder="번호"
             onChange={(event) => setTableLabel(event.target.value)}
           />
           <button type="submit" className="button small" disabled={busy || !tableLabel.trim()}>
-            테이블 열기
+            열기
           </button>
         </form>
         <button type="button" className="button secondary small block" disabled={busy} onClick={openTakeout}>
@@ -262,6 +263,16 @@ export function FoodServicePos({ catalog, onCatalogChanged }: Props) {
           <p className="muted small">결제할 때 레시피대로 식자재 재고가 빠집니다.</p>
         </div>
       </aside>
+
+      <div className="cart-bar">
+        <div className="cart-bar-total">
+          <span className="muted small">{selected ? orderTitle(selected) : '주문 없음'}</span>
+          <strong>{formatWon(selected?.totalAmount ?? 0)}</strong>
+        </div>
+        <button type="button" className="button" disabled={!selected || selected.lines.length === 0 || busy} onClick={() => setPayOpen(true)}>
+          결제하기
+        </button>
+      </div>
 
       {payOpen && selected && (
         <PaymentDialog

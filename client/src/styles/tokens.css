@@ -1,75 +1,120 @@
-/* 디자인 토큰. 색·간격·글자 크기는 여기서만 정한다 */
+/* 디자인 토큰. 색·간격·글자 크기·모서리는 여기서만 정한다 (애플 HIG 참고: 흰·연회색 면, 큰 모서리, 포인트 색 하나) */
 :root {
-  --color-bg: #f6f7f9;
-  --color-bg-subtle: #eef1f4;
+  --color-bg: #f5f5f7;
+  --color-bg-subtle: #ebebf0;
   --color-surface: #ffffff;
-  --color-text: #17202a;
-  --color-muted: #5e6b78;
-  --color-border: #dde2e8;
-  --color-primary: #1f7a5a;
-  --color-primary-hover: #19664b;
+  --color-surface-raised: #ffffff;
+  --color-fill: rgb(120 120 128 / 12%);
+  --color-fill-strong: rgb(120 120 128 / 20%);
+  --color-text: #1d1d1f;
+  --color-text-secondary: #424245;
+  --color-muted: #6e6e73;
+  --color-border: rgb(0 0 0 / 8%);
+  --color-border-strong: rgb(0 0 0 / 14%);
+
+  --color-primary: #0071e3;
+  --color-primary-hover: #0077ed;
+  --color-primary-active: #006edb;
   --color-primary-text: #ffffff;
-  --color-primary-weak: #e3f2ec;
-  --color-primary-weak-strong: #a9d6c4;
-  --color-info: #2f62c9;
-  --color-info-weak: #e6edfb;
-  --color-warning: #a8620a;
-  --color-warning-weak: #fbf0e0;
-  --color-danger: #c03030;
-  --color-danger-weak: #fbe7e7;
-  --color-success: #1f7a5a;
-  --color-success-weak: #e3f2ec;
-  --color-focus: #2f62c9;
+  --color-primary-weak: rgb(0 113 227 / 10%);
+  --color-primary-weak-strong: rgb(0 113 227 / 30%);
+
+  --color-info: #0071e3;
+  --color-info-weak: rgb(0 113 227 / 10%);
+  --color-success: #1a7f37;
+  --color-success-weak: rgb(52 199 89 / 14%);
+  --color-warning: #b25e00;
+  --color-warning-weak: rgb(255 149 0 / 14%);
+  --color-danger: #d70015;
+  --color-danger-weak: rgb(255 59 48 / 12%);
+  --color-focus: #0071e3;
+
+  --color-brand-gm: #0071e3;
+  --color-brand-apparel: #af52de;
+  --color-brand-food: #ff9500;
+
+  --glass: rgb(255 255 255 / 88%);
 
   --space-1: 8px;
   --space-2: 16px;
   --space-3: 24px;
   --space-4: 32px;
   --space-6: 48px;
+  --space-8: 72px;
 
+  --text-xs: 12px;
   --text-sm: 13px;
   --text-base: 15px;
   --text-md: 17px;
-  --text-lg: 20px;
-  --text-xl: 26px;
+  --text-lg: 21px;
+  --text-xl: 28px;
   --text-2xl: 40px;
+  --text-hero: 56px;
 
-  --radius-sm: 6px;
-  --radius: 10px;
-  --radius-lg: 14px;
-  --shadow-sm: 0 1px 2px rgb(16 24 40 / 6%);
-  --shadow-md: 0 8px 24px rgb(16 24 40 / 10%);
+  --radius-sm: 10px;
+  --radius: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-pill: 999px;
+
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 4%), 0 1px 1px rgb(0 0 0 / 3%);
+  --shadow-md: 0 12px 32px rgb(0 0 0 / 10%), 0 2px 6px rgb(0 0 0 / 5%);
+  --shadow-lg: 0 24px 64px rgb(0 0 0 / 16%), 0 4px 12px rgb(0 0 0 / 6%);
+
+  --ease: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --duration: 180ms;
 
   --header-height: 56px;
-  --nav-width: 208px;
+  --nav-width: 232px;
+  --tabbar-height: 64px;
 
   color-scheme: light dark;
-  font-family: system-ui, -apple-system, 'Apple SD Gothic Neo', 'Pretendard', 'Malgun Gothic', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Pretendard', system-ui, 'Segoe UI', Roboto, 'Malgun Gothic', sans-serif;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-bg: #0f1418;
-    --color-bg-subtle: #182027;
-    --color-surface: #141b21;
-    --color-text: #e6ebf0;
-    --color-muted: #96a3b0;
-    --color-border: #26313b;
-    --color-primary: #3fb68b;
-    --color-primary-hover: #56c79d;
-    --color-primary-text: #08130e;
-    --color-primary-weak: #133227;
-    --color-primary-weak-strong: #24624b;
-    --color-info: #7ea4f2;
-    --color-info-weak: #18233a;
-    --color-warning: #e3a24b;
-    --color-warning-weak: #33250f;
-    --color-danger: #f07878;
-    --color-danger-weak: #3a1a1a;
-    --color-success: #3fb68b;
-    --color-success-weak: #133227;
-    --color-focus: #7ea4f2;
+    --color-bg: #000000;
+    --color-bg-subtle: #1c1c1e;
+    --color-surface: #1c1c1e;
+    --color-surface-raised: #2c2c2e;
+    --color-fill: rgb(120 120 128 / 24%);
+    --color-fill-strong: rgb(120 120 128 / 36%);
+    --color-text: #f5f5f7;
+    --color-text-secondary: #d1d1d6;
+    --color-muted: #98989d;
+    --color-border: rgb(255 255 255 / 10%);
+    --color-border-strong: rgb(255 255 255 / 18%);
+
+    --color-primary: #2997ff;
+    --color-primary-hover: #3aa1ff;
+    --color-primary-active: #1f8df5;
+    --color-primary-text: #ffffff;
+    --color-primary-weak: rgb(41 151 255 / 16%);
+    --color-primary-weak-strong: rgb(41 151 255 / 36%);
+
+    --color-info: #2997ff;
+    --color-info-weak: rgb(41 151 255 / 16%);
+    --color-success: #30d158;
+    --color-success-weak: rgb(48 209 88 / 16%);
+    --color-warning: #ff9f0a;
+    --color-warning-weak: rgb(255 159 10 / 16%);
+    --color-danger: #ff453a;
+    --color-danger-weak: rgb(255 69 58 / 16%);
+    --color-focus: #2997ff;
+
+    --color-brand-gm: #2997ff;
+    --color-brand-apparel: #bf5af2;
+    --color-brand-food: #ff9f0a;
+
+    --glass: rgb(28 28 30 / 88%);
+
     --shadow-sm: 0 1px 2px rgb(0 0 0 / 40%);
-    --shadow-md: 0 8px 24px rgb(0 0 0 / 45%);
+    --shadow-md: 0 12px 32px rgb(0 0 0 / 50%), 0 2px 6px rgb(0 0 0 / 30%);
+    --shadow-lg: 0 24px 64px rgb(0 0 0 / 60%);
   }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --duration: 0ms; }
 }

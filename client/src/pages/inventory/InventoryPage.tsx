@@ -8,6 +8,9 @@ import { isFoodService, useCurrentStore } from '../../shared/store/storeContext'
 import { Badge } from '../../shared/ui/Badge'
 import { Dialog } from '../../shared/ui/Dialog'
 import { EmptyState, LoadState } from '../../shared/ui/EmptyState'
+import { IconRefresh, IconSearch } from '../../shared/ui/icons'
+import { Menu } from '../../shared/ui/Menu'
+import { Segmented } from '../../shared/ui/Segmented'
 import { useToast } from '../../shared/ui/toastContext'
 import { formatDateTimeKst, formatNumber, formatQuantity } from '../../shared/utils/format'
 import './inventory.css'
@@ -46,6 +49,7 @@ export default function InventoryPage() {
           </p>
         </div>
         <button type="button" className="button secondary small" onClick={reload} disabled={loading}>
+          <IconRefresh className="button-icon" />
           새로고침
         </button>
       </header>
@@ -55,31 +59,45 @@ export default function InventoryPage() {
       )}
 
       <div className="toolbar">
-        <label className="visually-hidden" htmlFor="stock-search">
-          재고 검색
-        </label>
-        <input
-          id="stock-search"
-          type="search"
-          value={query}
-          placeholder="상품 이름·SKU 코드"
-          onChange={(event) => setQuery(event.target.value)}
+        <div className="search-field">
+          <IconSearch />
+          <label className="visually-hidden" htmlFor="stock-search">
+            재고 검색
+          </label>
+          <input
+            id="stock-search"
+            type="search"
+            value={query}
+            placeholder="상품 이름·SKU 코드"
+            onChange={(event) => setQuery(event.target.value)}
+          />
+        </div>
+        <Segmented
+          label="재고 상태"
+          value={onlyLow ? 'low' : 'all'}
+          onChange={(value) => setOnlyLow(value === 'low')}
+          options={[
+            { value: 'all', label: '전체' },
+            {
+              value: 'low',
+              label: (
+                <>
+                  안전재고 이하{lowCount > 0 && <span className="seg-count">{lowCount}</span>}
+                </>
+              ),
+            },
+          ]}
         />
-        <label className="toggle">
-          <input type="checkbox" checked={onlyLow} onChange={(event) => setOnlyLow(event.target.checked)} />
-          안전재고 이하만
-        </label>
       </div>
 
       {!data && <LoadState loading={loading} error={error} onRetry={reload} />}
       {data && rows.length === 0 && <EmptyState title={onlyLow ? '안전재고 이하 품목이 없습니다.' : '품목이 없습니다.'} />}
       {rows.length > 0 && (
         <div className="table-wrap">
-          <table className="data-table responsive">
+          <table className="data-table responsive inventory-table">
             <thead>
               <tr>
                 <th scope="col">품목</th>
-                <th scope="col">SKU</th>
                 <th scope="col" className="num">현재 재고</th>
                 <th scope="col" className="num">안전재고</th>
                 <th scope="col">상태</th>
@@ -92,10 +110,10 @@ export default function InventoryPage() {
               {rows.map((item) => (
                 <tr key={item.skuId} className={item.needsReorder ? 'row-warning' : ''}>
                   <td data-label="품목">
-                    <strong>{item.itemName}</strong>
-                  </td>
-                  <td data-label="SKU" className="muted small">
-                    {item.skuCode}
+                    <span className="stock-name">
+                      <strong>{item.itemName}</strong>
+                      <span className="small">{item.skuCode}</span>
+                    </span>
                   </td>
                   <td data-label="현재 재고" className="num">
                     {formatQuantity(item.quantity, item.unit)}
@@ -114,28 +132,23 @@ export default function InventoryPage() {
                   </td>
                   <td className="row-actions">
                     {store.canManageInventory && (
-                      <>
-                        <button type="button" className="button small" onClick={() => setEdit({ kind: 'receive', item })}>
-                          입고
-                        </button>
-                        <button type="button" className="button secondary small" onClick={() => setEdit({ kind: 'adjust', item })}>
-                          실사
-                        </button>
-                        <button type="button" className="button secondary small" onClick={() => setEdit({ kind: 'reorder', item })}>
-                          안전재고
-                        </button>
-                      </>
+                      <button type="button" className="button small" onClick={() => setEdit({ kind: 'receive', item })}>
+                        입고
+                      </button>
                     )}
-                    <button
-                      type="button"
-                      className="button ghost small"
-                      onClick={() => openAvailability({ skuId: item.skuId, itemName: item.itemName })}
-                    >
-                      다른 매장
-                    </button>
-                    <button type="button" className="button ghost small" onClick={() => setHistory(item)}>
-                      이력
-                    </button>
+                    <Menu
+                      label={`${item.itemName} 더 보기`}
+                      items={[
+                        ...(store.canManageInventory
+                          ? [
+                              { label: '실사', onSelect: () => setEdit({ kind: 'adjust', item }) },
+                              { label: '안전재고 설정', onSelect: () => setEdit({ kind: 'reorder', item }) },
+                            ]
+                          : []),
+                        { label: '다른 매장 재고', onSelect: () => openAvailability({ skuId: item.skuId, itemName: item.itemName }) },
+                        { label: '변동 이력', onSelect: () => setHistory(item) },
+                      ]}
+                    />
                   </td>
                 </tr>
               ))}

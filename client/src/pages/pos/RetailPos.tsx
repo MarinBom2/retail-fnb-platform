@@ -6,6 +6,7 @@ import { orderApi } from '../../shared/api/order/orderService'
 import type { Order, PaymentMethodCode } from '../../shared/api/order/orderService'
 import { isApparel, useCurrentStore } from '../../shared/store/storeContext'
 import { EmptyState } from '../../shared/ui/EmptyState'
+import { IconSearch } from '../../shared/ui/icons'
 import { useToast } from '../../shared/ui/toastContext'
 import { formatNumber, formatWon } from '../../shared/utils/format'
 import { ApparelMatrixDialog } from './ApparelMatrixDialog'
@@ -120,18 +121,21 @@ export function RetailPos({ catalog, onCatalogChanged }: Props) {
     <div className="pos">
       <section className="pos-catalog" aria-label="상품">
         <div className="pos-search">
-          <label className="visually-hidden" htmlFor="pos-search">
-            {apparel ? '상품 검색' : '바코드 또는 상품 검색'}
-          </label>
-          <input
-            id="pos-search"
-            type="search"
-            autoFocus
-            value={query}
-            placeholder={apparel ? '스타일 이름·SKU 코드' : '바코드를 찍거나 상품 이름을 입력하세요'}
-            onChange={(event) => setQuery(event.target.value)}
-            onKeyDown={handleScan}
-          />
+          <div className="search-field">
+            <IconSearch />
+            <label className="visually-hidden" htmlFor="pos-search">
+              {apparel ? '상품 검색' : '바코드 또는 상품 검색'}
+            </label>
+            <input
+              id="pos-search"
+              type="search"
+              autoFocus
+              value={query}
+              placeholder={apparel ? '스타일 이름·SKU 코드' : '바코드를 찍거나 상품 이름을 입력하세요'}
+              onChange={(event) => setQuery(event.target.value)}
+              onKeyDown={handleScan}
+            />
+          </div>
           <span className="muted small pos-hint">Enter 로 담기</span>
         </div>
 
@@ -162,9 +166,11 @@ export function RetailPos({ catalog, onCatalogChanged }: Props) {
                 >
                   <span className="tile-name">{product.name}</span>
                   <span className="tile-price">{formatWon(sku.price)}</span>
-                  <span className={`tile-stock ${stock <= 0 ? 'is-zero' : ''}`}>
-                    {stock === 0 ? '품절 · 다른 매장 보기' : `재고 ${formatNumber(stock)}`}
-                  </span>
+                  {stock === 0 ? (
+                    <span className="tile-pill">품절 · 다른 매장 보기</span>
+                  ) : (
+                    <span className="tile-stock">재고 {formatNumber(stock)}</span>
+                  )}
                 </button>
               )
             })}
@@ -223,6 +229,16 @@ export function RetailPos({ catalog, onCatalogChanged }: Props) {
         </div>
       </aside>
 
+      <div className="cart-bar">
+        <div className="cart-bar-total">
+          <span className="muted small">{formatNumber(itemCount)}개</span>
+          <strong>{formatWon(total)}</strong>
+        </div>
+        <button type="button" className="button" disabled={cart.length === 0} onClick={() => setPayOpen(true)}>
+          결제하기
+        </button>
+      </div>
+
       {style && (
         <ApparelMatrixDialog
           product={style}
@@ -251,9 +267,13 @@ function StyleCard({ product, onOpen }: { product: CatalogProduct; onOpen: () =>
     <button type="button" className={`product-tile ${stock === 0 ? 'is-sold-out' : ''}`} onClick={onOpen}>
       <span className="tile-name">{product.name}</span>
       <span className="tile-price">{min === max ? formatWon(min) : `${formatWon(min)}~`}</span>
-      <span className="tile-stock">
-        {colors.size}색 · {sellable.length}개 옵션 · 재고 {formatNumber(stock)}
-      </span>
+      {stock === 0 ? (
+        <span className="tile-pill">품절 · 다른 매장 보기</span>
+      ) : (
+        <span className="tile-stock">
+          {colors.size}색 · {sellable.length}개 옵션 · 재고 {formatNumber(stock)}
+        </span>
+      )}
     </button>
   )
 }

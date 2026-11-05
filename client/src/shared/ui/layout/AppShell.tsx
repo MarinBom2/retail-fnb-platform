@@ -1,4 +1,5 @@
 import { useCallback, useEffect } from 'react'
+import type { ReactNode } from 'react'
 import { Link, Navigate, NavLink, Outlet, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { StockActionsProvider } from '../../../features/stock/StockActionsProvider'
 import { ROUTES, loginPath, storePath } from '../../../routes'
@@ -11,14 +12,15 @@ import { writeLastStoreId } from '../../utils/storage'
 import { Badge } from '../Badge'
 import { businessTypeTone } from '../badgeTone'
 import { EmptyState, LoadState } from '../EmptyState'
+import { IconBag, IconBoxes, IconGrid, IconReceipt, IconTag, IconTransfer } from '../icons'
 
-const NAV: { section: StoreSection; label: string; icon: string }[] = [
-  { section: '', label: '대시보드', icon: '▦' },
-  { section: 'pos', label: '판매(POS)', icon: '₩' },
-  { section: 'orders', label: '주문 내역', icon: '≡' },
-  { section: 'inventory', label: '재고', icon: '▤' },
-  { section: 'transfers', label: '매장 간 이동', icon: '⇄' },
-  { section: 'catalog', label: '상품', icon: '◇' },
+const NAV: { section: StoreSection; label: string; short: string; icon: ReactNode }[] = [
+  { section: '', label: '대시보드', short: '홈', icon: <IconGrid /> },
+  { section: 'pos', label: '판매(POS)', short: '판매', icon: <IconBag /> },
+  { section: 'orders', label: '주문 내역', short: '주문', icon: <IconReceipt /> },
+  { section: 'inventory', label: '재고', short: '재고', icon: <IconBoxes /> },
+  { section: 'transfers', label: '매장 간 이동', short: '이동', icon: <IconTransfer /> },
+  { section: 'catalog', label: '상품', short: '상품', icon: <IconTag /> },
 ]
 
 /** SCR-04~09 공통 틀: 매장 바꾸기, 메뉴, 로그아웃. 매장 권한은 서버가 다시 확인한다 */
@@ -77,7 +79,7 @@ function AuthenticatedShell() {
           <header className="app-header">
             <Link className="app-logo" to={ROUTES.SCR03_STORES} aria-label="매장 선택으로">
               <span className="logo-mark" aria-hidden="true" />
-              <span className="logo-text">Retail F&B</span>
+              <span className="logo-text">Retail F&amp;B</span>
             </Link>
             <div className="store-switcher">
               <label className="visually-hidden" htmlFor="store-switcher">
@@ -112,14 +114,18 @@ function AuthenticatedShell() {
           </header>
 
           <nav className="app-nav" aria-label="매장 메뉴">
-            {NAV.map((item) => (
-              <NavLink key={item.section} to={storePath(store.storeId, item.section)} end={item.section === ''}>
-                <span className="nav-icon" aria-hidden="true">
-                  {item.icon}
-                </span>
-                <span>{item.section === 'pos' && isFoodService(store) ? '주문·결제' : item.label}</span>
-              </NavLink>
-            ))}
+            {NAV.map((item) => {
+              const label = item.section === 'pos' && isFoodService(store) ? '주문·결제' : item.label
+              return (
+                <NavLink key={item.section} to={storePath(store.storeId, item.section)} end={item.section === ''} aria-label={label}>
+                  <span className="nav-icon" aria-hidden="true">
+                    {item.icon}
+                  </span>
+                  <span className="nav-label-long">{label}</span>
+                  <span className="nav-label-short">{item.section === 'pos' && isFoodService(store) ? '주문' : item.short}</span>
+                </NavLink>
+              )
+            })}
           </nav>
 
           <main className="app-main">

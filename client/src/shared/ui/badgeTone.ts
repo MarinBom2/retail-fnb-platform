@@ -1,14 +1,14 @@
-export type BadgeTone = 'neutral' | 'primary' | 'success' | 'warning' | 'danger' | 'info'
+export type BadgeTone = 'neutral' | 'primary' | 'success' | 'warning' | 'danger' | 'info' | 'gm' | 'apparel' | 'food'
 
 /** 업종마다 색을 고정한다 (화면 어디서나 같은 색) */
 export function businessTypeTone(code: string): BadgeTone {
   switch (code) {
     case 'GENERAL_MERCHANDISE':
-      return 'info'
+      return 'gm'
     case 'APPAREL':
-      return 'primary'
+      return 'apparel'
     case 'FOOD_SERVICE':
-      return 'warning'
+      return 'food'
     default:
       return 'neutral'
   }

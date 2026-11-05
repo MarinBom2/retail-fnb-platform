@@ -8,6 +8,8 @@ import { Badge } from '../../shared/ui/Badge'
 import { transferStatusTone } from '../../shared/ui/badgeTone'
 import { useConfirm } from '../../shared/ui/confirmContext'
 import { EmptyState, LoadState } from '../../shared/ui/EmptyState'
+import { IconPlus, IconRefresh, IconTransfer } from '../../shared/ui/icons'
+import { Segmented } from '../../shared/ui/Segmented'
 import { useToast } from '../../shared/ui/toastContext'
 import { formatDateTimeKst, formatNumber } from '../../shared/utils/format'
 import './transfers.css'
@@ -49,23 +51,42 @@ export default function TransfersPage() {
         </div>
         <div className="header-actions">
           <button type="button" className="button secondary small" onClick={reload} disabled={loading}>
+            <IconRefresh className="button-icon" />
             새로고침
           </button>
           {store.canManageInventory && (
             <button type="button" className="button small" onClick={() => openTransferRequest()}>
+              <IconPlus className="button-icon" />
               새 이동 요청
             </button>
           )}
         </div>
       </header>
 
-      <div className="tabs" role="tablist" aria-label="이동 방향">
-        <button type="button" role="tab" aria-selected={direction === 'INCOMING'} className={direction === 'INCOMING' ? 'selected' : ''} onClick={() => setDirection('INCOMING')}>
-          받는 이동 {pending(incoming) > 0 && <span className="tab-count">{pending(incoming)}</span>}
-        </button>
-        <button type="button" role="tab" aria-selected={direction === 'OUTGOING'} className={direction === 'OUTGOING' ? 'selected' : ''} onClick={() => setDirection('OUTGOING')}>
-          보내는 이동 {pending(outgoing) > 0 && <span className="tab-count">{pending(outgoing)}</span>}
-        </button>
+      <div className="transfer-toolbar">
+        <Segmented<Direction>
+          label="이동 방향"
+          value={direction}
+          onChange={setDirection}
+          options={[
+            {
+              value: 'INCOMING',
+              label: (
+                <>
+                  받는 이동{pending(incoming) > 0 && <span className="seg-count">{pending(incoming)}</span>}
+                </>
+              ),
+            },
+            {
+              value: 'OUTGOING',
+              label: (
+                <>
+                  보내는 이동{pending(outgoing) > 0 && <span className="seg-count">{pending(outgoing)}</span>}
+                </>
+              ),
+            },
+          ]}
+        />
       </div>
 
       {!data && <LoadState loading={loading} error={error} onRetry={reload} />}
@@ -139,10 +160,12 @@ function TransferCard({ transfer, onChanged }: { transfer: Transfer; onChanged: 
     <li className="transfer-card">
       <header className="transfer-head">
         <div>
-          <span className="muted small">#{transfer.transferId}</span>{' '}
-          <strong>
-            {transfer.fromStoreName} → {transfer.toStoreName}
-          </strong>
+          <div className="transfer-route">
+            <span>{transfer.fromStoreName}</span>
+            <IconTransfer className="arrow" />
+            <span>{transfer.toStoreName}</span>
+          </div>
+          <span className="transfer-id">#{transfer.transferId}</span>
           <span className="muted small"> · {transfer.direction === 'INCOMING' ? `${counterpart}에서 받음` : `${counterpart}(으)로 보냄`}</span>
         </div>
         <Badge tone={transferStatusTone(transfer.status.code)}>{transfer.status.description}</Badge>
@@ -168,7 +191,7 @@ function TransferCard({ transfer, onChanged }: { transfer: Transfer; onChanged: 
             <button
               key={action}
               type="button"
-              className={`button small ${ACTION_TEXT[action].tone === 'primary' ? '' : ACTION_TEXT[action].tone}`}
+              className={`button small ${ACTION_TEXT[action].tone === 'primary' ? '' : ACTION_TEXT[action].tone === 'danger' ? 'danger secondary' : 'secondary'}`}
               disabled={busy}
               onClick={() => void act(action)}
             >

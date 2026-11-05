@@ -5,6 +5,7 @@ import { useResource } from '../../shared/hooks/useResource'
 import { isApparel, useCurrentStore } from '../../shared/store/storeContext'
 import { Badge } from '../../shared/ui/Badge'
 import { EmptyState, LoadState } from '../../shared/ui/EmptyState'
+import { IconSearch } from '../../shared/ui/icons'
 import { formatNumber, formatQuantity, formatWon } from '../../shared/utils/format'
 import { compareSize } from '../pos/posUtils'
 import './catalog.css'
@@ -39,10 +40,13 @@ export default function CatalogPage() {
       </header>
 
       <div className="toolbar">
-        <label className="visually-hidden" htmlFor="catalog-search">
-          상품 검색
-        </label>
-        <input id="catalog-search" type="search" value={query} placeholder="상품 이름·SKU·바코드" onChange={(event) => setQuery(event.target.value)} />
+        <div className="search-field">
+          <IconSearch />
+          <label className="visually-hidden" htmlFor="catalog-search">
+            상품 검색
+          </label>
+          <input id="catalog-search" type="search" value={query} placeholder="상품 이름·SKU·바코드" onChange={(event) => setQuery(event.target.value)} />
+        </div>
         {kinds.length > 1 && (
           <div className="chip-row" role="tablist" aria-label="상품 종류">
             <button type="button" role="tab" aria-selected={kind === 'ALL'} className={`chip ${kind === 'ALL' ? 'selected' : ''}`} onClick={() => setKind('ALL')}>
