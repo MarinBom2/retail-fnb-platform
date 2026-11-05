@@ -117,6 +117,7 @@ export interface CodeLabel {
 | springdoc-openapi 3.2.0 | `springdoc-openapi-starter-webmvc-ui`, server 에서 `implementation` | Boot 4 라인. 내부 swagger-core 가 Jackson 2 를 가져오지만 패키지가 달라 충돌하지 않는다 |
 | Testcontainers 2.x | `testcontainers-mysql`, `testcontainers-junit-jupiter` | Boot 4.1.2 가 관리. 클래스가 1.x 와 다름 (`org.testcontainers.mysql.MySQLContainer`) |
 | spring-boot-starter-data-redis | server 에서 `implementation` | 캐시·세션 외 용도 `[ ]`. 헬스체크에서는 뺀다 (`management.health.redis.enabled=false`) |
+| H2 (Boot 관리 버전) | server 에서 `runtimeOnly` | `demo` 프로필 메모리 DB. 영업 시연을 jar 하나로 하려고 jar 에도 넣는다. `DemoScenarioTest` 가 Docker 없이 실제 API 흐름을 돌린다 |
 | `java-test-fixtures` | common:core 에 적용, server 가 `testFixtures(project(':common:core'))` | 도메인 픽스처(`DomainFixtures`)를 모듈끼리 복사하지 않는다 |
 | node-gradle 7.1.0 | `client/build.gradle`, Node 22.13.0 을 플러그인이 받는다 | 빌드 PC 에 Node 가 없어도 jar 에 화면을 담을 수 있다 |
 
@@ -163,6 +164,7 @@ Windows PowerShell 은 `.\gradlew.bat build -PskipClient`.
 | JWT 서명 키 | 루트 `secrets/application-secret.yml` (비우면 기동마다 임시 키) | `JWT_SECRET` (없으면 prod 기동 실패) |
 | DB 접속 | `application-local.yml` (docker-compose 의 root/root, 비밀 아님) | `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` |
 | Redis | `localhost:6379` | `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD` |
+| 데모 계정 | `demo` 프로필의 `DemoDataLoader` 상수 (비밀 아님, 메모리 DB 전용) | 운영에는 없다 |
 
 - `secrets/` 는 gitignore 이고, server·batch 의 `bootRun` 클래스패스에만 붙는다. jar 에는 들어가지 않는다.
 - `application-local.yml` 은 커밋한다. 비밀이 아닌 로컬 값(포트, docker-compose DB, Secure 쿠키 끄기)만 둔다.

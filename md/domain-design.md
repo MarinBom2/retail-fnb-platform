@@ -1,6 +1,6 @@
 # 매장 관리 도메인 설계 — 생활용품·의류·외식 (다이소 · 지오다노 · 음식점)
 
-> 상태: **초안 (2026-11-05)**. 세 업종을 하나의 모델로 담고, 업종마다 다른 부분만 데이터(enum 규칙)와 확장점(인터페이스 하나 + 빈 하나)으로 나눈다.
+> 상태: **초안**. 결정 반영: 브랜드 단일가, 식자재 음수 재고 불가, 매장 간 이동은 요청 → 승인 → 출고 → 입고. 세 업종을 하나의 모델로 담고, 업종마다 다른 부분만 데이터(enum 규칙)와 확장점(인터페이스 하나 + 빈 하나)으로 나눈다.
 > 관련 문서: [develop-principal.md](./develop-principal.md), [solid.md](./solid.md), [authentication-security.md](./authentication-security.md), [runtime-structure.md](./runtime-structure.md)
 > 모르는 값과 아직 정하지 않은 것은 `[ ]`로 비워 둔다. 구현된 것은 **(구현)**, 설계만 한 것은 **(설계)**로 표시한다.
 
@@ -12,9 +12,10 @@
 |---|---|---|
 | 브랜드·매장 | 브랜드 등록, 매장 생성·영업 시작·종료, 매장 직원 역할 **(구현)** | 매장별 영업시간, 휴무일 |
 | 상품 | 상품 마스터 + SKU, 의류 색상×사이즈, 외식 메뉴·식자재·레시피 **(구현)** | 매장별 판매가, 할인·행사, 분류 체계 |
-| 재고 | 매장×SKU 수량, 변동 원장, 입고·판매·환불·실사·매장 간 이동 **(구현)** | 이동 요청 승인 흐름(`StockTransfer`), 발주, 유통기한 |
+| 재고 | 매장×SKU 수량, 변동 원장, 입고·판매·환불·실사, 안전재고, 다른 매장 재고 찾기, **매장 간 이동(요청→승인→출고→입고)** **(구현)** | 본사 발주, 유통기한·로트 |
 | 판매 | 계산대·매장 식사·포장 주문, 결제(전액)·취소·환불, 결제 시 재고 차감 **(구현)** | 부분 결제·더치페이, 주방 진행 상태, 영수증 번호 |
-| API·화면 | 인증만 **(구현)** | 각 컨텍스트 API (§10), 매장 POS 화면 |
+| 대시보드 | 오늘 매출·시간대별 매출·인기 상품·안전재고 부족(+재고 많은 매장 추천)·처리할 이동 **(구현)** | 기간 비교, 브랜드 전체(본사) 대시보드 |
+| API·화면 | 인증, 매장·대시보드·카탈로그·재고·이동·주문 API ([api.md](./api.md)), 화면 SCR-01~09 **(구현)** | 상품 등록·브랜드 관리(본사) 화면 |
 
 ## 2. 용어 사전
 
@@ -29,6 +30,8 @@
 | 상품 종류 | ProductKind | `MERCHANDISE`(판매 상품), `MENU`(메뉴), `INGREDIENT`(식자재) |
 | 레시피 | Recipe | 메뉴 1개에 드는 식자재와 양 |
 | 재고 | Stock | 매장×SKU 의 현재 수량 |
+| 안전재고 | reorderPoint | 이 수량 이하로 내려가면 다시 채울 대상. 0 이면 미설정 |
+| 매장 간 이동 | StockTransfer | 같은 브랜드 매장끼리 재고를 옮기는 1건. 받을 매장이 요청하고 보낼 매장이 승인·출고한다 |
 | 재고 변동 | StockMovement | 재고가 바뀐 1건의 기록(원장). 추가만 한다 |
 | 차감 정책 | StockDeductionPolicy | 판매한 SKU 가 어떤 재고를 얼마나 줄이는지 정하는 업종별 확장점 |
 | 주문 | Order | 계산대 1건 또는 테이블·포장 1건. 결제까지의 단위 |
@@ -49,7 +52,7 @@
 | 주문 방식 | 계산대 | 계산대 | 매장 식사(테이블 필수), 포장 |
 | 판매 시 줄어드는 재고 | 판 SKU | 판 SKU | 레시피의 식자재 |
 | 재고 단위 | 개 | 개 | 개, g, ml |
-| 매장 간 이동 | 드묾 | **자주** (사이즈 맞추기) | 드묾 |
+| 매장 간 이동 | 가끔 (품절 상품) | **자주** (사이즈 맞추기) | 가끔 (식자재 급히 빌리기) |
 
 ### 3.2 차이를 담는 곳 (이 세 군데 밖에서 업종으로 분기하지 않는다)
 
@@ -93,7 +96,7 @@ store  <──  catalog  <──  inventory
 | 업종 | 흐름 |
 |---|---|
 | 다이소 | 계산대에서 주문 시작(`COUNTER`) → 바코드 스캔마다 `addItem` (같은 SKU 는 수량 합침) → 결제 → 판 SKU 차감 |
-| 지오다노 | 계산대 주문 → 스타일·색상·사이즈 SKU 담기 (영수증 이름 "크루넥 티셔츠 (BLACK / L)") → 결제 → 판 SKU 차감. 매장에 없는 사이즈는 다른 매장에서 이동(`transferOut` / `transferIn`) |
+| 지오다노 | 계산대 주문 → 스타일·색상·사이즈 SKU 담기 (영수증 이름 "크루넥 티셔츠 (BLACK / L)") → 결제 → 판 SKU 차감. 매장에 없는 사이즈는 POS 에서 바로 다른 매장 재고를 찾아 이동 요청 → 상대 매장 승인·출고 → 우리 매장 입고 (§5.6) |
 | 음식점 | 테이블 주문(`DINE_IN`, 테이블 번호 필수) 또는 포장(`TAKEOUT`) → 메뉴 추가 주문은 OPEN 동안 계속 → 결제 → 레시피대로 식자재 차감 |
 
 ### 4.2 주문 상태 머신
@@ -205,7 +208,8 @@ StockMovement (원장, 추가만)
 - 변동 수량은 1 이상. 실사(`adjustTo`)만 차이 0 을 기록할 수 있다 (실사했다는 사실을 남긴다).
 - `balanceAfter` 가 있어 원장만으로 어느 시점의 재고든 다시 셀 수 있다.
 - 저장 전 `Stock`(ID 없음)으로는 기록을 만들 수 없다. 서비스가 `Stock` 을 먼저 저장한다.
-- 외식 식자재도 음수를 허용하지 않는다 `[결정 필요: 실제 주방은 입고 등록이 늦어 음수가 흔하다. 허용하면 업종별 정책으로 뺀다]`.
+- 외식 식자재도 음수를 허용하지 않는다 (**결정**). 입고 등록이 늦어 결제가 막히면 입고·실사를 먼저 하라는 뜻으로 409 `OUT_OF_STOCK` 을 준다.
+- 안전재고(`reorderPoint`)는 재고마다 둔다. `needsReorder()` = 안전재고 > 0 이고 수량 ≤ 안전재고 (경계: 같으면 보충 대상).
 
 ### 5.5 StockDeductionPolicy (`inventory.domain` 포트, `inventory.policy` 구현) **(구현)**
 
@@ -226,7 +230,34 @@ public interface StockDeductionPolicy {
 - 돌려준 목록에 같은 SKU 가 두 번 나오지 않는다.
 - `StockDeductionPolicies` 가 기동할 때 업종마다 정책이 정확히 하나인지 확인한다.
 
-### 5.6 Order · OrderLine (`order.domain`) **(구현)**
+### 5.6 StockTransfer (`inventory.domain`) **(구현)**
+
+```
+StockTransfer (루트)
+ ├─ id, brandId, fromStoreId(보낼 매장), toStoreId(받을 매장)
+ ├─ status: REQUESTED | APPROVED | REJECTED | SHIPPED | RECEIVED | CANCELLED
+ ├─ lines: List<TransferLine(skuId, itemName, quantity)>
+ ├─ memo, rejectReason, requestedBy
+ ├─ requestedAt, approvedAt, shippedAt, receivedAt, closedAt
+ └─ version (@Version)
+```
+
+```
+REQUESTED --approve(보낼)--> APPROVED --ship(보낼)--> SHIPPED --receive(받을)--> RECEIVED
+    |  \                         |
+    |   reject(보낼, 사유)         cancel(받을)
+    v     v                      v
+ CANCELLED REJECTED           CANCELLED
+  (cancel, 받을)
+```
+
+- **누가 무엇을 할 수 있는지를 `availableActions(viewerStoreId, canManageInventory)` 한 곳에서 정한다.** 상태 전이 메서드도 이 결과로 검사하고, API 응답의 `availableActions` 로 화면 버튼도 이것으로 그린다. 서버 인가와 화면 버튼이 어긋나지 않는다.
+- 재고는 출고 때 보낼 매장에서(`TRANSFER_OUT`), 입고 때 받을 매장에서(`TRANSFER_IN`) 바뀐다. 승인만으로는 재고를 잡아 두지 않는다 `[ ]` (예약 재고는 다음 단계).
+- 출고할 때 보낼 매장 재고가 모자라면 409 `OUT_OF_STOCK`, 상태는 APPROVED 그대로 (롤백).
+- 받은 수량이 보낸 수량과 다르면(파손·분실) 지금은 입고 뒤 실사로 맞춘다 `[ ]` (입고 수량 입력은 다음 단계).
+- 같은 브랜드, 다른 매장, 재고를 세는 SKU(메뉴 제외), SKU 당 한 줄만.
+
+### 5.7 Order · OrderLine (`order.domain`) **(구현)**
 
 ```
 Order (루트, 테이블명 orders: ORDER 는 예약어)
@@ -251,7 +282,7 @@ OrderLine
 - 결제 금액은 합계와 같아야 한다 (부분 결제 없음).
 - 이름·단가는 스냅샷이라 나중에 상품 가격이 바뀌어도 영수증은 그대로다.
 
-### 5.7 Money (`domain.base`) **(구현)**
+### 5.8 Money (`domain.base`) **(구현)**
 
 원 단위 `long`. 음수 불가, 덧셈·곱셈은 overflow 때 예외(`Math.addExact`). 할인·환불은 음수 금액이 아니라 상태로 표현한다.
 
@@ -318,13 +349,15 @@ OrderLine
 
 | ID | 화면 | 상태 |
 |---|---|---|
-| SCR-01 | 홈 (로그인 상태) | 뼈대 |
-| SCR-02 | 로그인·가입 | 뼈대 |
-| SCR-03 | 매장 선택 | `[ ]` |
-| SCR-04 | 상품·SKU 관리 | `[ ]` |
-| SCR-05 | 매장 재고 (입고·실사·이동) | `[ ]` |
-| SCR-06 | 판매 (POS: 계산대 / 테이블) | `[ ]` |
-| SCR-07 | 주문·매출 조회 | `[ ]` |
+| SCR-01 | 랜딩 (제품 소개, 데모 체험) | 구현 |
+| SCR-02 | 로그인·가입 | 구현 |
+| SCR-03 | 매장 선택 | 구현 |
+| SCR-04 | 매장 대시보드 | 구현 |
+| SCR-05 | 판매 POS (생활용품: 바코드 / 의류: 색상·사이즈 / 외식: 테이블·포장) | 구현 |
+| SCR-06 | 주문 내역 (취소·환불) | 구현 |
+| SCR-07 | 매장 재고 (입고·실사·안전재고·다른 매장 재고·이력) | 구현 |
+| SCR-08 | 매장 간 이동 | 구현 |
+| SCR-09 | 상품 (카탈로그) | 구현 (조회만) |
 
 ### 9.2 요구사항 (FR)
 
@@ -341,33 +374,22 @@ OrderLine
 | FR-CA-003 | 메뉴 레시피 등록 | 도메인 구현 |
 | FR-IN-001 | 입고 | 도메인 구현 |
 | FR-IN-002 | 실사 조정 | 도메인 구현 |
-| FR-IN-003 | 매장 간 이동 | 도메인 구현 (요청·승인 흐름은 다음 단계) |
-| FR-IN-004 | 재고 변동 이력 조회 | `[ ]` |
+| FR-IN-003 | 매장 간 이동 (요청 → 승인 → 출고 → 입고, 거절·취소) | 구현 |
+| FR-IN-004 | 매장 재고·재고 변동 이력 조회 | 구현 |
+| FR-IN-005 | 안전재고 설정 | 구현 |
+| FR-IN-006 | 다른 매장 재고 찾기 | 구현 |
+| FR-DA-001 | 오늘 매장 현황 (대시보드) | 구현 |
 | FR-OR-001 | 주문 시작·상품 담기 | 도메인 구현 |
-| FR-OR-002 | 결제 + 재고 차감 | 서비스 구현 |
+| FR-OR-002 | 결제 + 재고 차감 | 구현 |
 | FR-OR-003 | 결제 전 취소 | 도메인 구현 |
-| FR-OR-004 | 전액 환불 + 재고 복원 | 서비스 구현 |
+| FR-OR-004 | 전액 환불 + 재고 복원 | 구현 |
+| FR-OR-005 | 주문 목록·상세 | 구현 |
 
 ---
 
-## 10. API 초안 **(설계)**
+## 10. API
 
-경로는 `/api/v1`, 성공은 DTO 그대로, 오류는 ProblemDetail + `code` ([develop-principal.md](./develop-principal.md) §7·§8). 매장 단위 API 는 `StoreStaff` 로 인가한다 `[ ]`.
-
-| 메서드 | 경로 | 요구사항 |
-|---|---|---|
-| POST | `/api/v1/admin/brands` | FR-ST-001 |
-| POST | `/api/v1/brands/{brandId}/stores` | FR-ST-002 |
-| POST | `/api/v1/stores/{storeId}/open`, `/close` | FR-ST-002 |
-| POST | `/api/v1/brands/{brandId}/products` | FR-CA-001 |
-| POST | `/api/v1/products/{productId}/skus` | FR-CA-001 |
-| PUT | `/api/v1/skus/{skuId}/recipe` | FR-CA-003 |
-| POST | `/api/v1/stores/{storeId}/stocks/{skuId}/receive` | FR-IN-001 |
-| POST | `/api/v1/stores/{storeId}/stocks/{skuId}/adjust` | FR-IN-002 |
-| POST | `/api/v1/stores/{storeId}/orders` | FR-OR-001 |
-| POST | `/api/v1/orders/{orderId}/items` | FR-OR-001 |
-| POST | `/api/v1/orders/{orderId}/payment` | FR-OR-002 |
-| POST | `/api/v1/orders/{orderId}/cancel`, `/refund` | FR-OR-003, 004 |
+요청·응답 JSON 은 [api.md](./api.md) 가 기준이다. 매장 API 는 모두 `/api/v1/stores/{storeId}/...` 이고, `StoreAccessGuard` 가 그 매장 직원인지(재고를 바꾸는 일은 점주·매니저인지) 먼저 확인한다. 플랫폼 관리자는 모든 매장을 통과한다.
 
 **오류 코드**
 
@@ -375,8 +397,10 @@ OrderLine
 |---|---|---|
 | 재고 부족 (`skuId` 확장 필드) | `OUT_OF_STOCK` | 409 |
 | 주문 상태에서 못 하는 일 | `ORDER_STATE_CONFLICT` | 409 |
+| 이동 상태·매장 쪽에서 못 하는 일 | `TRANSFER_STATE_CONFLICT` | 409 |
 | 매장이 영업 중이 아님 | `STORE_STATE_CONFLICT` | 409 |
 | 동시 수정 충돌 | `CONCURRENT_UPDATE` | 409 |
+| 이 매장 직원이 아님, 재고 권한 없음 | `FORBIDDEN` | 403 |
 | 그 밖의 도메인 규칙 위반 (업종에 없는 주문 방식, 결제 금액 불일치 등) | `DOMAIN_RULE_VIOLATION` | 400 |
 
 ---
@@ -386,7 +410,7 @@ OrderLine
 | 모듈 | 패키지 |
 |---|---|
 | `common:core` | `store.domain`, `catalog.domain`, `inventory.domain`, `inventory.policy`, `order.domain`, `member.domain`, `domain.base`(BaseEntity, Money, DomainException), `type.common`(DescriptionCode, ErrorCode), `exception`(BusinessException), `config`, 공통 yml |
-| `server` | `order.application`(OrderPaymentService), `member.api`, `member.application`, `security`, `exception`(GlobalExceptionHandler, ProblemDetails), `config`(OpenApi) |
+| `server` | 컨텍스트마다 `*.application`(유스케이스·트랜잭션) + `*.api`(컨트롤러·DTO): `store`(StoreAccessGuard, 내 매장), `catalog`, `inventory`(재고·이동), `order`(주문·결제), `dashboard`. 그 밖에 `member`, `security`, `exception`, `config`, `web`(SPA 포워딩), `demo`(demo 프로필 데이터) |
 | `batch` | `batch.*` `[ ]` (일 마감 집계 등) |
 
 ```
@@ -417,6 +441,8 @@ com.marinbom2.retailfnbplatform
 | `StockDeductionPolicyTest` | 업종별 차감량, 레시피 없음 = 빈 목록, 업종당 정책 하나 |
 | `OrderTest` | 업종별 주문 방식·테이블, 수량 합치기, 합계, 스냅샷, 결제 금액 경계(합계 −1원), 상태 전이 |
 | `OrderPaymentServiceTest` | 다이소 차감·환불 복원, 음식점 레시피 차감·식자재 합치기, 재고 부족 |
+| `StockTransferTest` | 이동 단계와 시각, 매장 쪽 규칙(받을 매장은 승인·출고 불가 등), 거절 사유, 가능한 동작, 요청 규칙 |
+| `DemoScenarioTest` (server, H2) | demo 데이터로 실제 API: 대시보드, 품절 → 다른 매장 재고 → 이동 요청·승인·출고·입고 → 판매, 외식 테이블 결제와 식자재 차감, 직원·다른 매장 403, 의류 카탈로그 |
 
 픽스처는 `common/core/src/testFixtures` 의 `DomainFixtures` (server 테스트도 같이 쓴다).
 
@@ -432,11 +458,14 @@ com.marinbom2.retailfnbplatform
 
 | # | 질문 | 영향 |
 |---|---|---|
-| 1 | 매장별 판매가(지점가)가 필요한가? 지금은 브랜드 단일가 | `StorePrice` 추가 여부 |
+| 1 | ~~매장별 판매가~~ → **브랜드 단일가로 결정** | - |
 | 2 | 분류 체계: 자유 문자열(`category`)로 충분한가, 트리가 필요한가 | `Category` 애그리거트 |
-| 3 | 외식 식자재 음수 재고 허용 | §5.4, 업종별 정책 |
+| 3 | ~~외식 식자재 음수 재고~~ → **허용하지 않음으로 결정** | - |
 | 4 | 레시피 변경 뒤 이전 주문 환불 시 차감량 | §5.3, 주문별 차감 내역 저장 |
-| 5 | 매장 간 이동을 요청 → 승인 → 출고 → 입고 흐름으로 둘지 | `StockTransfer` 애그리거트 |
+| 5 | ~~매장 간 이동 흐름~~ → **요청 → 승인 → 출고 → 입고로 결정, 구현** (§5.6) | - |
+| 5-1 | 승인 때 보낼 매장 재고를 예약해 둘지 (승인 뒤 팔려 출고가 막히는 경우) | 예약 재고(`reserved`) |
+| 5-2 | 입고 수량을 받은 대로 입력할지 (파손·분실) | `TransferLine.receivedQuantity` |
 | 6 | 주방 진행 상태(조리 중·서빙 완료)를 주문 줄에 둘지 | `OrderLine.kitchenStatus` |
 | 7 | 테이블을 엔티티로 관리할지 (배치도·합석) | `DiningTable` 애그리거트 |
 | 8 | 부분 결제·더치페이·복합 결제 | `Payment` 를 Order 밖 애그리거트로 |
+| 9 | 대시보드 집계를 주문 원본에서 매번 계산 → 매장당 하루 주문이 많아지면 일 마감 집계 테이블 | `batch` 일 마감, `daily_sales` |

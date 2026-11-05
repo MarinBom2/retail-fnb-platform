@@ -23,6 +23,7 @@
 | A. 로컬 개발 (기본) | 화면·API 개발할 때 | `localhost:9191` | Vite dev 서버 (HMR) | Vite 가 9190 으로 프록시 |
 | B. 로컬 통합 확인 | 배포 전에 jar 처럼 확인할 때 | `localhost:9190` | Spring (`static/`) | Spring |
 | C. 운영 | 실제 서비스 | `[ ]` (도메인 미정) | Spring (jar 안 `static/`) | Spring |
+| D. 데모 | 영업 시연, DB 없이 화면 확인 | `localhost:9190` | Spring (`-PwithClient` 또는 jar) | Spring (`demo` 프로필, H2 메모리 DB + 데모 데이터) |
 
 ### A. 로컬 개발
 
@@ -72,6 +73,20 @@ Windows PowerShell 은 `.\gradlew.bat :server:bootRun`. IntelliJ 에서 서버�
 ```
 
 jar 는 CI 에서 `bootJar` 로 만들고, 화면이 기본으로 들어간다. 인프라(AWS 구성, 배포 방식)는 `[ ]` 정하지 않았다.
+
+### D. 데모
+
+```bash
+SPRING_PROFILES_ACTIVE=demo ./gradlew :server:bootRun -PwithClient
+```
+
+```bash
+java -jar server/build/libs/server.jar --spring.profiles.active=demo
+```
+
+- MySQL·Redis·Docker 가 필요 없다. 기동할 때마다 `DemoDataLoader` 가 같은 데모 데이터를 새로 만든다 (계정은 [api.md](./api.md) §7).
+- H2 드라이버는 `runtimeOnly` 라 jar 에도 들어간다. 노트북 하나로 시연하려는 것이다. `prod` 프로필은 MySQL 만 쓴다.
+- A 방식(Vite HMR)과 같이 쓸 때는 서버만 demo 로 띄우고 `npm run dev` 를 따로 띄운다.
 
 ---
 
