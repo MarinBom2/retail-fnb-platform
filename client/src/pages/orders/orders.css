@@ -1,0 +1,22 @@
+.order-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-1); }
+.order-row details { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius); }
+.order-row summary {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  cursor: pointer;
+  list-style: none;
+}
+.order-row summary::-webkit-details-marker { display: none; }
+.order-row details[open] summary { border-bottom: 1px solid var(--color-border); }
+.order-id { color: var(--color-muted); font-variant-numeric: tabular-nums; }
+.order-title { display: grid; min-width: 0; }
+.order-amount { font-variant-numeric: tabular-nums; }
+.order-detail { padding: var(--space-2); display: grid; gap: var(--space-2); }
+.order-actions { display: flex; justify-content: flex-end; gap: var(--space-1); }
+@media (max-width: 720px) {
+  .order-row summary { grid-template-columns: minmax(0, 1fr) auto; }
+  .order-id { display: none; }
+}

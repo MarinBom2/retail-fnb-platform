@@ -1,0 +1,55 @@
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  /* 한글은 어절 단위로 줄을 바꾼다 */
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+h1, h2, h3 { line-height: 1.3; margin: 0; letter-spacing: -0.01em; }
+h1 { font-size: var(--text-xl); }
+h2 { font-size: var(--text-md); }
+p { margin: 0 0 var(--space-1); }
+
+a { color: var(--color-primary); }
+
+:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+
+input, select, textarea {
+  font: inherit;
+  color: inherit;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+  min-width: 0;
+}
+input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 0; border-color: transparent; }
+
+.muted { color: var(--color-muted); }
+.small { font-size: var(--text-sm); }
+.grow { flex: 1 1 auto; min-width: 0; }
+.error { color: var(--color-danger); }
+.danger-text { color: var(--color-danger); }
+.warning-text { color: var(--color-warning); }
+.positive { color: var(--color-success); }
+.negative { color: var(--color-danger); }
+.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.page { max-width: 1200px; margin: 0 auto; padding: var(--space-4) var(--space-2); }
+.page.narrow { max-width: 440px; }
+.page-loading { min-height: 50vh; }

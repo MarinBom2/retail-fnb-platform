@@ -1,0 +1,41 @@
+.transfer-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-2); }
+.transfer-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: var(--space-2);
+  display: grid;
+  gap: var(--space-2);
+}
+.transfer-head { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-1); flex-wrap: wrap; }
+.transfer-lines { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.transfer-lines li {
+  display: flex; justify-content: space-between; gap: var(--space-2);
+  padding: 6px var(--space-1); background: var(--color-bg-subtle); border-radius: var(--radius-sm);
+}
+.transfer-actions { display: flex; gap: var(--space-1); justify-content: flex-end; flex-wrap: wrap; }
+
+.steps { list-style: none; margin: 0; padding: 0; display: flex; gap: 0; }
+.step { flex: 1 1 0; display: grid; justify-items: start; gap: 2px; position: relative; padding-top: 18px; min-width: 0; }
+.step::before {
+  content: ''; position: absolute; top: 6px; left: 12px; right: 0; height: 2px; background: var(--color-border);
+}
+.step:last-child::before { display: none; }
+.step-dot {
+  position: absolute; top: 0; left: 0; width: 14px; height: 14px; border-radius: 50%;
+  background: var(--color-surface); border: 2px solid var(--color-border);
+}
+.step-done .step-dot { background: var(--color-primary); border-color: var(--color-primary); }
+.step-done::before { background: var(--color-primary); }
+.step-current .step-dot { border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-weak); }
+.step-closed .step-dot { background: var(--color-danger); border-color: var(--color-danger); }
+.step-label { font-size: var(--text-sm); font-weight: 600; }
+.step-todo .step-label { color: var(--color-muted); font-weight: 400; }
+.step-time { font-size: 12px; color: var(--color-muted); font-variant-numeric: tabular-nums; }
+.tab-count {
+  display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px; margin-left: 4px;
+  border-radius: 10px; background: var(--color-primary); color: var(--color-primary-text); font-size: 12px;
+}
+@media (max-width: 520px) {
+  .step-time { display: none; }
+}

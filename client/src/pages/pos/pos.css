@@ -1,0 +1,74 @@
+.pos {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  min-height: calc(100vh - var(--header-height));
+}
+.pos-food { grid-template-columns: 220px minmax(0, 1fr) 360px; }
+
+.pos-catalog { padding: var(--space-2); min-width: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.pos-search { display: flex; align-items: center; gap: var(--space-1); }
+.pos-search input { flex: 1 1 auto; font-size: var(--text-md); padding: 12px 14px; }
+.pos-hint { white-space: nowrap; }
+
+.product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--space-1); }
+.product-tile {
+  display: grid; gap: 4px; align-content: start; text-align: left; min-height: 96px; padding: 12px;
+  border: 1px solid var(--color-border); border-radius: var(--radius); background: var(--color-surface);
+  color: var(--color-text); font: inherit; cursor: pointer; transition: border-color 0.15s, transform 0.05s;
+}
+.product-tile:hover { border-color: var(--color-primary); }
+.product-tile:active { transform: scale(0.98); }
+.product-tile:disabled { opacity: 0.6; }
+.product-tile.is-sold-out { background: var(--color-bg-subtle); }
+.tile-name { font-weight: 600; line-height: 1.35; }
+.tile-price { font-weight: 700; color: var(--color-primary); font-variant-numeric: tabular-nums; }
+.tile-stock { font-size: 12px; color: var(--color-muted); }
+.tile-stock.is-zero, .product-tile.is-sold-out .tile-stock { color: var(--color-danger); }
+
+.pos-cart {
+  border-left: 1px solid var(--color-border); background: var(--color-surface);
+  display: flex; flex-direction: column; min-width: 0;
+  position: sticky; top: var(--header-height); height: calc(100vh - var(--header-height));
+}
+.cart-header { display: flex; justify-content: space-between; align-items: center; padding: var(--space-2); border-bottom: 1px solid var(--color-border); }
+.cart-lines { list-style: none; margin: 0; padding: 0 var(--space-2); overflow: auto; flex: 1 1 auto; }
+.cart-lines li { display: flex; align-items: center; gap: var(--space-1); padding: 12px 0; border-bottom: 1px solid var(--color-border); }
+.cart-lines .grow { display: grid; }
+.line-name { font-weight: 600; font-size: var(--text-sm); }
+.line-amount { min-width: 80px; text-align: right; font-variant-numeric: tabular-nums; }
+.pos-cart .empty-state { flex: 1 1 auto; align-content: center; }
+.cart-footer { padding: var(--space-2); border-top: 1px solid var(--color-border); display: grid; gap: var(--space-1); }
+.cart-total { display: flex; justify-content: space-between; align-items: baseline; }
+.cart-total strong { font-size: var(--text-xl); font-variant-numeric: tabular-nums; }
+.receipt-banner { margin: var(--space-2) var(--space-2) 0; padding: 10px 12px; border-radius: var(--radius-sm); background: var(--color-success-weak); color: var(--color-success); font-size: var(--text-sm); font-weight: 600; }
+
+.pay-total { display: flex; justify-content: space-between; align-items: baseline; padding: var(--space-2); background: var(--color-bg-subtle); border-radius: var(--radius); }
+.pay-total strong { font-size: var(--text-xl); font-variant-numeric: tabular-nums; }
+.pay-change { font-weight: 700; color: var(--color-success); }
+
+.pos-tables { border-right: 1px solid var(--color-border); background: var(--color-surface); padding: var(--space-2); display: grid; align-content: start; gap: var(--space-1); }
+.table-open { display: flex; gap: 6px; }
+.table-open input { flex: 1 1 auto; width: 100%; }
+.section-label { font-size: var(--text-sm); color: var(--color-muted); margin-top: var(--space-1); }
+.table-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.table-chip {
+  width: 100%; display: grid; gap: 2px; text-align: left; padding: 10px 12px;
+  border: 1px solid var(--color-border); border-radius: var(--radius-sm); background: var(--color-surface);
+  color: var(--color-text); font: inherit; cursor: pointer;
+}
+.table-chip.selected { border-color: var(--color-primary); background: var(--color-primary-weak); }
+
+@media (max-width: 1100px) {
+  .pos-food { grid-template-columns: 200px minmax(0, 1fr); }
+  .pos-food .pos-cart { grid-column: 1 / -1; position: static; height: auto; border-left: 0; border-top: 1px solid var(--color-border); }
+}
+@media (max-width: 900px) {
+  .pos, .pos-food { grid-template-columns: minmax(0, 1fr); }
+  .pos-cart { position: static; height: auto; border-left: 0; border-top: 1px solid var(--color-border); }
+  .pos-tables { border-right: 0; border-bottom: 1px solid var(--color-border); }
+  .table-list { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+  .pos-hint { display: none; }
+}
+@media (max-width: 720px) {
+  .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

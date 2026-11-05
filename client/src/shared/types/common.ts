@@ -35,3 +35,9 @@ export interface PageResponse<TItem> {
   hasNext: boolean;
   hasPrevious: boolean;
 }
+
+/** 서버 enum 은 {code, description} 객체로 온다. 비교는 code, 표시는 description */
+export interface CodeLabel {
+  code: string
+  description: string
+}

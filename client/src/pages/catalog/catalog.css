@@ -1,0 +1,5 @@
+.catalog-list { display: grid; gap: var(--space-2); }
+.product-card h2 { font-size: var(--text-md); margin: 0; }
+.badge-row { display: flex; gap: 6px; flex-wrap: wrap; }
+.size-matrix.readonly td { text-align: center; font-variant-numeric: tabular-nums; padding: 6px 10px; }
+.size-matrix.readonly td.is-zero { color: var(--color-danger); font-weight: 600; }

@@ -1,10 +1,7 @@
 import { apiRequest } from '../../core/apiClient'
+import type { CodeLabel } from '../../types/common'
 
-/** RoleType 같은 서버 enum 은 {code, description} 객체로 온다. 비교는 code, 표시는 description */
-export interface CodeLabel {
-  code: string
-  description: string
-}
+export type { CodeLabel }
 
 /** 서버 MemberResponse */
 export interface MemberProfile {
