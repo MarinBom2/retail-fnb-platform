@@ -1,0 +1,48 @@
+.transfer-toolbar { margin-bottom: var(--space-2); }
+.transfer-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-2); }
+.transfer-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3);
+  display: grid;
+  gap: var(--space-2);
+  box-shadow: var(--shadow-sm);
+}
+.transfer-head { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-1); flex-wrap: wrap; }
+.transfer-route { display: flex; align-items: center; gap: 8px; font-size: var(--text-md); font-weight: 600; letter-spacing: -0.01em; }
+.transfer-route .arrow { color: var(--color-muted); width: 18px; height: 18px; }
+.transfer-id { color: var(--color-muted); font-size: var(--text-xs); font-variant-numeric: tabular-nums; }
+.transfer-lines { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.transfer-lines li {
+  display: flex; justify-content: space-between; gap: var(--space-2); align-items: center;
+  min-height: 40px; padding: 0 14px; background: var(--color-fill); border-radius: var(--radius-sm); font-size: var(--text-sm);
+}
+.transfer-actions { display: flex; gap: var(--space-1); justify-content: flex-end; flex-wrap: wrap; }
+
+.steps { list-style: none; margin: var(--space-1) 0 0; padding: 0; display: flex; gap: 0; }
+.step { flex: 1 1 0; display: grid; justify-items: start; gap: 2px; position: relative; padding-top: 22px; min-width: 0; }
+.step::before {
+  content: ''; position: absolute; top: 7px; left: 14px; right: -2px; height: 1px; background: var(--color-border-strong);
+}
+.step:last-child::before { display: none; }
+.step-dot {
+  position: absolute; top: 0; left: 0; width: 14px; height: 14px; border-radius: 50%;
+  background: var(--color-surface); border: 1.5px solid var(--color-border-strong); box-sizing: border-box;
+}
+.step-done .step-dot { background: var(--color-primary); border-color: var(--color-primary); }
+.step-done::before { background: var(--color-primary); }
+.step-current .step-dot { border-color: var(--color-primary); animation: step-pulse 1.6s var(--ease) infinite; }
+@keyframes step-pulse {
+  0% { box-shadow: 0 0 0 0 var(--color-primary-weak-strong); }
+  70% { box-shadow: 0 0 0 7px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+@media (prefers-reduced-motion: reduce) { .step-current .step-dot { animation: none; box-shadow: 0 0 0 4px var(--color-primary-weak); } }
+.step-closed .step-dot { background: var(--color-danger); border-color: var(--color-danger); }
+.step-label { font-size: var(--text-sm); font-weight: 600; }
+.step-todo .step-label { color: var(--color-muted); font-weight: 400; }
+.step-time { font-size: var(--text-xs); color: var(--color-muted); font-variant-numeric: tabular-nums; }
+@media (max-width: 520px) {
+  .step-time { display: none; }
+  .transfer-card { padding: var(--space-2); }
+}

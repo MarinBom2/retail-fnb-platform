@@ -1,0 +1,39 @@
+/*
+ * 웹 클라이언트(Vite + React). npm 빌드 결과(dist)를 server 모듈이 담아 간다 (server/build.gradle, md/runtime-structure.md 3절).
+ *   - server bootJar: 기본으로 담는다 (CI·운영). 빼려면 -PskipClient
+ *   - server bootRun·IDE 실행: 기본으로 담지 않는다. 9190 에서 화면까지 볼 때만 -PwithClient
+ * 개발 중에는 이 태스크를 쓰지 않고 client 폴더에서 `npm run dev` 를 따로 띄운다 (9191, /api 는 9190 으로 프록시).
+ *
+ * 주의 (Windows): npm run dev 를 띄워 둔 채로 이 빌드가 돌면 npmInstall 이 vite 가 잡고 있는
+ * 네이티브 파일(@rolldown/binding-*.node)을 지우지 못해 EPERM 으로 깨진다. dev 서버를 끄고 돌린다.
+ */
+plugins {
+    id 'com.github.node-gradle.node' version '7.1.0'
+}
+
+node {
+    // 빌드 PC 에 Node 가 없어도 되도록 플러그인이 직접 받는다. @rolldown/plugin-babel(22.12+)과 eslint 10(22.13+) 요구를 함께 만족하는 버전
+    version = '22.13.0'
+    download = true
+    // npm ci 는 node_modules 를 통째로 지우고 다시 깔아, 실패하면 반쯤 지워진 채로 남는다. install 은 제자리에서 맞춘다
+    npmInstallCommand = 'install'
+}
+
+tasks.register('npmBuild', com.github.gradle.node.npm.task.NpmTask) {
+    description = 'tsc 타입 검사 후 vite 로 dist 를 만든다'
+    dependsOn tasks.named('npmInstall')
+    args = ['run', 'build']
+
+    // 소스가 그대로면 Gradle 이 건너뛴다. 서버만 고쳤을 때 npm 빌드가 매번 돌지 않게
+    inputs.dir('src')
+    inputs.dir('public')
+    inputs.files('index.html', 'package.json', 'package-lock.json', 'vite.config.ts',
+                 'tsconfig.json', 'tsconfig.app.json', 'tsconfig.node.json')
+    // Node 버전이 바뀌면 산출물도 다시 만든다
+    inputs.property('nodeVersion', node.version)
+    outputs.dir(layout.projectDirectory.dir('dist'))
+}
+
+tasks.register('clean', Delete) {
+    delete layout.projectDirectory.dir('dist')
+}

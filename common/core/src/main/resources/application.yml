@@ -1,0 +1,66 @@
+server:
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+  tomcat:
+    uri-encoding: UTF-8
+spring:
+  config:
+    # 로컬 비밀 값(루트 secrets/, bootRun 클래스패스에만 있음). 운영은 환경변수
+    import: optional:classpath:application-secret.yml
+  jpa:
+    # 트랜잭션이 끝나면 영속성 컨텍스트를 닫는다 (뷰 렌더링 중 지연 로딩 쿼리 금지)
+    open-in-view: false
+    properties:
+      hibernate:
+        # enum 칼럼에 CHECK 제약을 만들지 않는다 (ddl update 가 고치지 않아 enum 값을 추가하면 저장이 막힌다)
+        dialect: com.marinbom2.retailfnbplatform.config.NoColumnCheckMySQLDialect
+  data:
+    redis:
+      # 로컬은 docker-compose 의 redis
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+
+logging:
+  level:
+    root: INFO
+    org:
+      springframework:
+        security: INFO
+
+jwt:
+  # HS256 서명 키. 최소 32바이트여야 하고, 비워두면 기동할 때마다 임시 키를 만든다
+  # (재기동하면 발급된 토큰이 전부 무효가 되고, 인스턴스가 여러 개면 서로 검증하지 못한다)
+  secret: ${JWT_SECRET:}
+  access-token-ttl: 12h
+  # 액세스 토큰은 HttpOnly 쿠키로만 내려간다. 응답 본문에는 없다.
+  cookie:
+    name: retailfnb_at
+    secure: true        # HTTPS 전용. local 프로필이 false 로 덮는다
+    same-site: Lax      # 다른 사이트에서 시작된 POST 에는 쿠키가 실리지 않는다 (CSRF 방어)
+    path: /
+    domain:             # 비우면 응답한 호스트에만 붙는다
+
+# API 문서 (OpenApiConfig). 로컬: /swagger-ui.html. 운영은 application-prod.yml 에서 끈다
+springdoc:
+  paths-to-match: /api/**
+  default-produces-media-type: application/json
+  swagger-ui:
+    operations-sorter: alpha
+    tags-sorter: alpha
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+      show-components: never
+  health:
+    redis:
+      enabled: false

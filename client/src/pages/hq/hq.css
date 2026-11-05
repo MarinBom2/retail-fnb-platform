@@ -1,0 +1,150 @@
+/* 본사 화면 (SCR-10~12) */
+.hq-mark {
+  margin-left: 2px; padding: 2px 8px; border-radius: var(--radius-pill);
+  background: var(--color-text); color: var(--color-bg); font-size: var(--text-xs); font-weight: 600;
+}
+.hq-brand-name { font-size: var(--text-sm); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hq-nav-ops { margin-top: auto; }
+
+/* SCR-10 브랜드 목록 */
+.brand-list { max-width: 1000px; }
+.brand-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--space-2); }
+.brand-card {
+  display: grid; gap: var(--space-2); padding: var(--space-3);
+  border-radius: var(--radius-lg); background: var(--color-surface); color: inherit; text-decoration: none;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--duration) var(--ease), box-shadow var(--duration) var(--ease);
+}
+.brand-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); text-decoration: none; }
+.brand-card-title { display: flex; justify-content: space-between; align-items: center; gap: var(--space-1); }
+.brand-card-title strong { font-size: var(--text-lg); letter-spacing: -0.02em; }
+.brand-card-title .chevron { color: var(--color-muted); flex: 0 0 auto; }
+.brand-stats { display: flex; gap: var(--space-3); }
+.brand-stats div { display: grid; gap: 2px; }
+.brand-stats dt { font-size: var(--text-xs); color: var(--color-muted); }
+.brand-stats dd { margin: 0; font-size: var(--text-md); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+.onboarding { padding: var(--space-4); border-radius: var(--radius-xl); background: var(--color-surface); box-shadow: var(--shadow-sm); text-align: center; display: grid; gap: var(--space-3); justify-items: center; }
+.onboarding h2 { font-size: var(--text-xl); letter-spacing: -0.02em; }
+.onboarding-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-2); width: 100%; max-width: 720px; text-align: left; }
+.onboarding-steps li { display: grid; gap: 4px; padding: var(--space-2); border-radius: var(--radius); background: var(--color-bg); }
+.step-number {
+  width: 24px; height: 24px; border-radius: 50%; display: inline-grid; place-items: center;
+  background: var(--color-primary); color: #fff; font-size: var(--text-xs); font-weight: 700;
+}
+
+/* 업종 고르기 카드 */
+.type-choices { display: grid; gap: var(--space-1); border: 0; padding: 0; margin: 0; }
+.type-choices legend { font-size: var(--text-sm); font-weight: 600; color: var(--color-text-secondary); margin-bottom: 6px; }
+.type-choice {
+  position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 12px; align-items: center;
+  padding: 14px 16px; border-radius: var(--radius); border: 1px solid var(--color-border); background: var(--color-surface);
+  cursor: pointer; transition: border-color var(--duration) var(--ease), background var(--duration) var(--ease);
+}
+.type-choice:hover { background: var(--color-fill); }
+.type-choice.selected { border-color: var(--color-primary); background: var(--color-primary-weak); box-shadow: inset 0 0 0 1px var(--color-primary); }
+.type-choice input { position: absolute; opacity: 0; pointer-events: none; }
+.type-choice:has(input:focus-visible) { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.type-dot { grid-row: span 2; width: 12px; height: 12px; border-radius: 50%; }
+.type-dot.gm { background: var(--color-brand-gm); }
+.type-dot.apparel { background: var(--color-brand-apparel); }
+.type-dot.food { background: var(--color-brand-food); }
+.type-choice strong { font-size: var(--text-base); }
+.type-choice .small { grid-column: 2; }
+
+/* SCR-11 매장 관리 */
+.hq-table td { height: 56px; padding-top: 8px; padding-bottom: 8px; }
+.hq-name { display: grid; gap: 2px; min-width: 0; }
+.hq-name strong { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hq-name .small { color: var(--color-muted); }
+.staff-list { list-style: none; margin: 0 0 var(--space-3); padding: 0; border-radius: var(--radius); background: var(--color-bg); }
+.staff-list li { display: flex; align-items: center; gap: var(--space-1); padding: 10px 12px; }
+.staff-list li + li { border-top: 1px solid var(--color-border); }
+.staff-list .email { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.staff-list select { min-height: 36px; border-radius: var(--radius-pill); }
+.inline-form { display: flex; gap: var(--space-1); flex-wrap: wrap; align-items: flex-end; }
+.inline-form > label { flex: 1 1 200px; display: grid; gap: 4px; }
+.inline-form > select { min-height: 44px; }
+.field-error { color: var(--color-danger); font-size: var(--text-sm); margin: 0; }
+
+/* SCR-12 상품 관리 */
+.category-group { margin-top: var(--space-3); }
+.category-group h2 { font-size: var(--text-sm); font-weight: 600; color: var(--color-text-secondary); margin: 0 0 var(--space-1) 4px; }
+.product-list { list-style: none; margin: 0; padding: 0; border-radius: var(--radius-lg); background: var(--color-surface); box-shadow: var(--shadow-sm); }
+.product-list > li + li { border-top: 1px solid var(--color-border); }
+.product-row { display: flex; align-items: center; gap: var(--space-2); padding: 12px 16px; min-height: 64px; }
+.product-row .hq-name { flex: 1 1 auto; }
+.product-row.is-discontinued .hq-name strong { color: var(--color-muted); }
+.product-badges { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.product-price { font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.expand-button { min-width: 44px; }
+.expand-button svg { transition: transform var(--duration) var(--ease); }
+.expand-button[aria-expanded='true'] svg { transform: rotate(90deg); }
+.sku-table { margin: 0 16px 14px; }
+.sku-table .data-table td, .sku-table .data-table th { padding-top: 8px; padding-bottom: 8px; }
+
+/* 상품 등록: 색상·사이즈 칩 입력과 미리보기 */
+.chip-input { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 6px; min-height: 44px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); background: var(--color-surface); }
+.chip-input:focus-within { outline: 2px solid var(--color-focus); outline-offset: 1px; }
+.chip-input input { flex: 1 1 100px; min-width: 80px; border: 0; padding: 6px; min-height: 30px; background: transparent; }
+.chip-input input:focus { outline: none; }
+.chip-token { display: inline-flex; align-items: center; gap: 4px; padding: 4px 6px 4px 10px; border-radius: var(--radius-pill); background: var(--color-fill); font-size: var(--text-sm); font-weight: 600; }
+.chip-token button { width: 22px; height: 22px; display: inline-grid; place-items: center; border: 0; border-radius: 50%; background: transparent; color: var(--color-muted); cursor: pointer; }
+.chip-token button:hover { background: var(--color-fill-strong); color: var(--color-text); }
+.chip-token svg { width: 14px; height: 14px; }
+.preset-row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.sku-preview { border-radius: var(--radius); background: var(--color-bg); padding: 12px; display: grid; gap: 8px; }
+.sku-preview-head { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-1); }
+.sku-preview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; max-height: 220px; overflow: auto; }
+.sku-preview-grid code { display: block; padding: 6px 10px; border-radius: var(--radius-sm); background: var(--color-surface); font-size: var(--text-xs); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* 레시피 편집 */
+.recipe-rows { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.recipe-row { display: grid; grid-template-columns: minmax(0, 1fr) 120px auto; gap: 8px; align-items: center; }
+.recipe-row .qty { display: flex; align-items: center; gap: 6px; }
+.recipe-row .qty input { min-width: 0; width: 100%; }
+.recipe-row select { min-width: 0; }
+
+@media (max-width: 720px) {
+  .onboarding { padding: var(--space-3) var(--space-2); }
+  .onboarding-steps { grid-template-columns: minmax(0, 1fr); }
+  .hq-shell .app-user .hq-ops-link { display: none; }
+  .hq-nav-ops { margin-top: 0; }
+
+  .hq-table.responsive tr {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-areas: 'name status actions' 'name staff actions';
+    column-gap: 10px; row-gap: 4px; align-items: center; padding: 10px 12px;
+  }
+  .hq-table.responsive td { height: auto; }
+  .hq-table.responsive td[data-label]::before { display: none; }
+  .hq-table.responsive td[data-label='매장'] { grid-area: name; justify-content: flex-start; text-align: left; }
+  .hq-table.responsive td[data-label='상태'] { grid-area: status; justify-content: flex-end; }
+  .hq-table.responsive td[data-label='직원'] { grid-area: staff; justify-content: flex-end; }
+  .hq-table.responsive td.row-actions { grid-area: actions; padding-top: 0; flex-wrap: nowrap; justify-content: flex-end; }
+
+  /* 모바일: 두 줄. 위 [펼치기 · 이름 · 더보기], 아래 [배지 · 가격] */
+  .product-row {
+    display: grid; grid-template-columns: 44px minmax(0, 1fr) auto;
+    grid-template-areas: 'exp name menu' '. badges price';
+    gap: 6px 10px; padding: 10px 12px;
+  }
+  .product-row .expand-button { grid-area: exp; }
+  .product-row .hq-name { grid-area: name; }
+  .product-row .menu-anchor { grid-area: menu; }
+  .product-badges { grid-area: badges; justify-content: flex-start; }
+  .product-price { grid-area: price; align-self: center; }
+  .sku-table { margin: 0 12px 12px; }
+  .recipe-row { grid-template-columns: minmax(0, 1fr) 96px auto; }
+}
+
+.form-field { display: grid; gap: 6px; }
+.field-label { font-size: var(--text-sm); font-weight: 600; color: var(--color-text-secondary); }
+
+/* 긴 등록 폼: 버튼을 대화상자 아래에 붙여 스크롤해도 보이게 */
+.sticky-actions > .dialog-actions {
+  position: sticky; bottom: calc(-1 * var(--space-3)); z-index: 1;
+  margin: 0 calc(-1 * var(--space-3)) calc(-1 * var(--space-3));
+  padding: var(--space-2) var(--space-3) var(--space-3);
+  background: var(--color-surface-raised); border-top: 1px solid var(--color-border);
+}

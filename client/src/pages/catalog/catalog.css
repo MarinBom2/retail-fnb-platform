@@ -1,0 +1,6 @@
+.catalog-list { display: grid; gap: var(--space-2); }
+.product-card h2 { font-size: var(--text-md); margin: 0; }
+.badge-row { display: flex; gap: 6px; flex-wrap: wrap; }
+.size-matrix.readonly td { text-align: center; font-variant-numeric: tabular-nums; min-width: 48px; height: 36px; padding: 0 10px; border-radius: 8px; background: var(--color-fill); font-weight: 500; }
+.size-matrix.readonly td.is-zero { color: var(--color-danger); background: var(--color-danger-weak); font-weight: 600; }
+.size-matrix.readonly td.matrix-empty { background: transparent; }

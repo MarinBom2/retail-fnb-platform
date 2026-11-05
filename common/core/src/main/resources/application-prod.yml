@@ -1,0 +1,40 @@
+# 운영 프로필. 비밀 값은 전부 환경변수로 받는다 (md/develop-principal.md §6). 이 파일에는 값을 적지 않는다.
+#   DB_URL, DB_USERNAME, DB_PASSWORD   RDS 접속
+#   JWT_SECRET                         application.yml jwt.secret
+#   REDIS_HOST, REDIS_PORT, REDIS_PASSWORD
+server:
+  port: 19190
+  # ALB 가 붙이는 X-Forwarded-Proto 를 믿는다. HTTPS 판단(Secure 쿠키, 리다이렉트 주소)에 필요하다
+  forward-headers-strategy: native
+spring:
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    url: ${DB_URL}
+    hikari:
+      auto-commit: false
+      pool-name: retail-fnb-domain-cp
+      maximum-pool-size: 25
+      minimum-idle: 0
+      idle-timeout: 600000        # 10분(유휴시 반납)
+      max-lifetime: 1700000       # ~28m (RDS wait_timeout보다 짧게)
+      connection-timeout: 10000
+      keepalive-time: 300000
+      leak-detection-threshold: 20000
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        # SQL 로그 설정(format_sql · show-sql 등)은 두지 않는다 — SQL 로그는 local 에서만
+        default_batch_fetch_size: 100
+        order_inserts: true
+        order_updates: true
+
+# 운영에서는 API 문서와 Swagger UI 를 열지 않는다 (경로·스키마 노출 방지)
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false

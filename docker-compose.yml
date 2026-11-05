@@ -1,0 +1,20 @@
+# 로컬 개발용 DB·Redis. 값은 common/core application-local.yml 과 같다
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: retail-fnb-mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_ROOT_HOST=%
+      - MYSQL_DATABASE=retail_fnb
+    command: [ '--character-set-server=utf8mb4', '--collation-server=utf8mb4_general_ci' ]
+    ports:
+      - 3306:3306
+    restart: always
+
+  redis:
+    image: redis:7-alpine
+    container_name: retail-fnb-redis
+    ports:
+      - 6379:6379
+    restart: always
