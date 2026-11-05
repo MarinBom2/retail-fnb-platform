@@ -1,37 +1,28 @@
-HELP.md
-.gradle
-build/
-!gradle/wrapper/gradle-wrapper.jar
-!**/src/main/**/build/
-!**/src/test/**/build/
-
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-bin/
-!**/src/main/**/bin/
-!**/src/test/**/bin/
-
-### IntelliJ IDEA ###
-.idea
-*.iws
+# IDE (루트에서 열 때)
+.idea/
 *.iml
+*.iws
 *.ipr
 out/
-!**/src/main/**/out/
-!**/src/test/**/out/
-
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-
-### VS Code ###
 .vscode/
+.classpath
+.project
+.settings/
+bin/
+
+# Gradle 산출물 (모든 모듈)
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+HELP.md
+
+# 비밀 값
+# 로컬 키 파일은 루트 secrets/ 에 둔다. bootRun 클래스패스에만 붙고 jar 에는 들어가지 않는다 (server·batch build.gradle)
+secrets/
+.env
+.env.*
+**/application-secret.yml
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,1 +1,7 @@
 rootProject.name = 'retail-fnb-platform'
+
+include 'server', 'batch'
+
+include 'common:core'
+
+include 'client'

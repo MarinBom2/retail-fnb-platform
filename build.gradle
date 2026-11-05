@@ -1,37 +1,60 @@
+/*
+ * 루트 빌드: 플러그인 버전과 Java 모듈 공통 설정만 둔다. 모듈별 의존성은 각 모듈 build.gradle 에.
+ *
+ * 모듈
+ *   :server       API + 화면(jar 하나에 client dist 포함). Boot 실행 jar
+ *   :batch        배치. Boot 실행 jar
+ *   :common:core  도메인·공통 설정. 라이브러리 jar (bootJar 끔)
+ *   :client       Vite + React (Node 플러그인, Java 아님)
+ *   :common       common/core 를 담는 폴더일 뿐. 빌드 대상 아님
+ */
 plugins {
-    id 'java'
-    id 'org.springframework.boot' version '4.1.2'
-    id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.springframework.boot' version '4.1.2' apply false
+    id 'io.spring.dependency-management' version '1.1.7' apply false
 }
 
-group = 'com.marinbom2'
-version = '0.0.1-SNAPSHOT'
-description = 'retail-fnb-platform'
+allprojects {
+    group = 'com.marinbom2'
+    version = '0.0.1-SNAPSHOT'
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+    repositories {
+        mavenCentral()
     }
 }
 
-repositories {
-    mavenCentral()
+ext {
+    jjwtVersion = '0.13.0'
+    springdocVersion = '3.2.0'
 }
 
-dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.springframework.boot:spring-boot-starter-session-jdbc'
-    implementation 'org.springframework.boot:spring-boot-starter-webmvc'
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
-    testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
-    testImplementation 'org.springframework.boot:spring-boot-starter-session-jdbc-test'
-    testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
-    testCompileOnly 'org.projectlombok:lombok'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    testAnnotationProcessor 'org.projectlombok:lombok'
-}
+def javaModules = [':server', ':batch', ':common:core']
 
-tasks.named('test') {
-    useJUnitPlatform()
+configure(javaModules.collect { project(it) }) {
+    apply plugin: 'java'
+    apply plugin: 'org.springframework.boot'
+    apply plugin: 'io.spring.dependency-management'
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(21)
+        }
+    }
+
+    dependencies {
+        compileOnly 'org.projectlombok:lombok'
+        annotationProcessor 'org.projectlombok:lombok'
+        testCompileOnly 'org.projectlombok:lombok'
+        testAnnotationProcessor 'org.projectlombok:lombok'
+
+        testImplementation 'org.springframework.boot:spring-boot-starter-test'
+        testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    }
+
+    tasks.withType(JavaCompile).configureEach {
+        options.encoding = 'UTF-8'
+    }
+
+    tasks.named('test') {
+        useJUnitPlatform()
+    }
 }

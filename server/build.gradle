@@ -1,0 +1,81 @@
+bootJar {
+    archiveFileName = 'server.jar'
+}
+
+
+springBoot {
+    mainClass = 'com.marinbom2.retailfnbplatform.ServerApplication'
+}
+
+// 로컬 실행은 local 프로필 — application.yml 에는 기본 프로필이 없다 (운영에서 prod 를 빠뜨려도 local 이 켜지지 않게).
+// SPRING_PROFILES_ACTIVE 가 있으면 그것
+// 루트 secrets/ (application-secret.yml, gitignore)를 bootRun 클래스패스에만 붙인다. jar 에는 들어가지 않는다.
+// 운영은 환경변수(JWT_SECRET 등)로 받는다
+bootRun {
+    systemProperty 'spring.profiles.active', System.getenv('SPRING_PROFILES_ACTIVE') ?: 'local'
+    classpath += files(rootProject.file('secrets'))
+}
+
+
+dependencies {
+    // 도메인(member), 공통 yml. JPA 는 core 가 api 로 내보낸다
+    implementation project(':common:core')
+
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+    // JWT. jjwt-jackson은 Jackson 2(com.fasterxml)에 묶여 있어 Boot 4의 Jackson 3와 섞이므로 jjwt-gson 사용 (md/authentication-security.md 1절)
+    implementation "io.jsonwebtoken:jjwt-api:${jjwtVersion}"
+    runtimeOnly "io.jsonwebtoken:jjwt-impl:${jjwtVersion}"
+    runtimeOnly "io.jsonwebtoken:jjwt-gson:${jjwtVersion}"
+    // API 문서 (Swagger UI). 3.x 가 Boot 4 라인. 운영은 application-prod.yml 에서 끈다
+    implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springdocVersion}"
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    runtimeOnly 'com.mysql:mysql-connector-j'
+
+    testImplementation testFixtures(project(':common:core'))
+    testImplementation 'org.springframework.boot:spring-boot-starter-actuator-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-data-redis-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-security-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-validation-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+    testImplementation 'org.springframework.boot:spring-boot-testcontainers'
+    testImplementation 'org.testcontainers:testcontainers-junit-jupiter'
+    testImplementation 'org.testcontainers:testcontainers-mysql'
+}
+
+
+
+/*
+ * 웹 클라이언트(client/dist)를 담는 곳은 두 군데다 (md/runtime-structure.md).
+ *
+ * 1) jar (bootJar): 기본으로 담는다. CI·운영 이미지는 이 jar 하나로 화면과 API 를 같은 포트로 서빙한다.
+ *    화면 없이 jar 만 빨리 만들 때는 -PskipClient.
+ * 2) 로컬 실행 (bootRun, IDE 실행): 기본으로 담지 않는다. 그래서 서버를 띄울 때 npm 빌드가 돌지 않는다.
+ *    평소 화면 개발은 client 에서 npm run dev (9191, HMR, /api 는 9190 으로 프록시).
+ *    9190 에서 jar 처럼 화면까지 확인하고 싶을 때만 -PwithClient.
+ */
+def clientDist = project(':client').layout.projectDirectory.dir('dist')
+
+if (!project.hasProperty('skipClient')) {
+    tasks.named('bootJar') {
+        dependsOn ':client:npmBuild'
+        bootInf {
+            into('classes/static') {
+                from clientDist
+            }
+        }
+    }
+}
+
+if (project.hasProperty('withClient')) {
+    processResources {
+        dependsOn ':client:npmBuild'
+        from(clientDist) {
+            into 'static'
+        }
+    }
+}

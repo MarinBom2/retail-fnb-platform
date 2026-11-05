@@ -1,0 +1,31 @@
+// batch/build.gradle
+bootJar {
+    archiveFileName = 'batch.jar'
+}
+
+
+springBoot {
+    mainClass = 'com.marinbom2.retailfnbplatform.BatchApplication'
+}
+
+// 로컬 실행은 local 프로필 — application.yml 에는 기본 프로필이 없다 (server/build.gradle 과 같다)
+// 루트 secrets/ (키 파일, gitignore)를 bootRun 클래스패스에만 붙인다. jar 에는 들어가지 않는다
+bootRun {
+    systemProperty 'spring.profiles.active', System.getenv('SPRING_PROFILES_ACTIVE') ?: 'local'
+    classpath += files(rootProject.file('secrets'))
+}
+
+dependencies {
+    // 도메인·설정은 common:core 에서 온다. server(API 앱)는 의존하지 않는다
+    implementation project(':common:core')
+
+    implementation 'org.springframework.boot:spring-boot-starter-batch'
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+
+    runtimeOnly 'com.mysql:mysql-connector-j'
+
+    testImplementation 'org.springframework.batch:spring-batch-test'
+    testImplementation 'org.springframework.boot:spring-boot-testcontainers'
+    testImplementation 'org.testcontainers:testcontainers-junit-jupiter'
+    testImplementation 'org.testcontainers:testcontainers-mysql'
+}
