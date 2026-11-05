@@ -112,7 +112,13 @@ export default function InventoryPage() {
                   <td data-label="품목">
                     <span className="stock-name">
                       <strong>{item.itemName}</strong>
-                      <span className="small">{item.skuCode}</span>
+                      <span className="small">
+                        {/* 모바일 한 줄 요약에서는 안전재고 칸을 숨기고 여기에 먼저 붙인다 (SKU 코드가 길면 코드 쪽이 잘린다) */}
+                        {item.reorderPoint > 0 && (
+                          <span className="stock-reorder-inline">안전재고 {formatQuantity(item.reorderPoint, item.unit)} · </span>
+                        )}
+                        <span className="stock-sku">{item.skuCode}</span>
+                      </span>
                     </span>
                   </td>
                   <td data-label="현재 재고" className="num">
